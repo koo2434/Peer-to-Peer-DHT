@@ -4,55 +4,63 @@ import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
 
-class PingRequestService implements Callable<Integer> {
+class PingRequestService implements Runnable {
 
     private int nodeID;
-    private int destID;
+    private List<Integer> targetIDList;
     private int PING_INTERVAL;
 
     private DatagramSocket socket;
-    private SocketAddress destAddr;
+    private List<SocketAddress> targetAddrList;
 
-    public PingRequestService(int ID, int port, int destID, SocketAddress destAddr, int pingInterval) throws Exception {
+    volatile static boolean isDestAlive = true;
+    volatile static Map<Integer, Integer> pingCounter = new HashMap<>();
+
+    /**
+     * Constructor.
+     *
+     * @param ID id number of this node.
+     * @param targetIDList List of successors / target nodes to ping to
+     * @param PING_INTERVAL how long should intervals between each ping be; milliseconds
+     * @param PORT_OFFSET port number = PORT_OFFSET + ID, rule applies to all nodes in network
+     */
+    public PingRequestService(DatagramSocket socket, int ID, List<Integer> targetIDList, int PING_INTERVAL, int PORT_OFFSET) throws Exception {
         this.nodeID = ID;
-        this.destID = destID;
-        this.PING_INTERVAL = pingInterval;
+        this.targetIDList = targetIDList;
+        this.PING_INTERVAL = PING_INTERVAL;
 
-        this.socket = new DatagramSocket(port);
-        this.destAddr = destAddr;
+        this.socket = socket;
+        this.targetAddrList = new ArrayList<>();
+        for (Integer id : targetIDList) {
+            pingCounter.put(id, 0);
+            this.targetAddrList.add(new InetSocketAddress("127.0.0.1", PORT_OFFSET + id));
+        }
     }
 
     //Thread Instance sending ping to its successors
     @Override
-    public Integer call() throws Exception {
-        boolean isDestAlive = true;
-
+    public void run() {
         while(isDestAlive) {
-            String pingMsg = "Ping: " + this.nodeID;
+            String pingMsg = "REQUEST:" + this.nodeID;
             byte[] msgBytes = pingMsg.getBytes();
-            DatagramPacket pingPacket = new DatagramPacket(msgBytes, msgBytes.length, this.destAddr);
 
             try{
-                socket.send(pingPacket);
-                System.out.println("Ping request sent to Peer " + destID);
+                for (int i = 0; i < this.targetAddrList.size(); i++) {
+                    int targetID = this.targetIDList.get(i);
+                    SocketAddress targetAddr = this.targetAddrList.get(i);
+
+                    DatagramPacket pingPacket = new DatagramPacket(msgBytes, msgBytes.length, targetAddr);
+                    socket.send(pingPacket);
+                    pingCounter.put(targetID, pingCounter.get(targetID) + 1);
+                    System.out.println("Ping request sent to Peer " + targetID);
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
-            byte[] responseBytes = new byte[1024];
-            DatagramPacket responsePacket = new DatagramPacket(responseBytes, responseBytes.length);
+            //TODO: Block for given PING_INTERVAL
 
-            socket.setSoTimeout(PING_INTERVAL);
-            try {
-                socket.receive(responsePacket);
-                System.out.println(new String(responsePacket.getData()));
-                System.out.println("Ping response received from Peer " + destID);
-            } catch (SocketTimeoutException e) {
-                isDestAlive = false;
-            }
         }
-
-        return destID;
     }
 
 }
