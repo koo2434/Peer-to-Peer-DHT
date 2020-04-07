@@ -51,16 +51,19 @@ class PingRequestService implements Runnable {
 
                     DatagramPacket pingPacket = new DatagramPacket(msgBytes, msgBytes.length, targetAddr);
                     socket.send(pingPacket);
-                    pingCounter.put(targetID, pingCounter.get(targetID) + 1);
+                    int newCount =  pingCounter.get(targetID) + 1;
+                    if (newCount >= 3) isDestAlive = false;
+                    pingCounter.put(targetID, newCount);
                     System.out.println("Ping request sent to Peer " + targetID);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
-            //TODO: Block for given PING_INTERVAL
+            if(isDestAlive) Thread.sleep(PING_INTERVAL);
 
         }
+
+        
     }
 
 }

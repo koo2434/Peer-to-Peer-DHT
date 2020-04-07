@@ -4,7 +4,7 @@ import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
 
-class PingProcessService implements Callable<Integer> {
+class PingProcessService implements Runnable {
 
     private DatagramSocket socket;
     private int nodeID;
@@ -15,7 +15,7 @@ class PingProcessService implements Callable<Integer> {
     }
 
     @Override
-    public Integer call() throws Exception {
+    public void run() {
         while (true) {
             byte[] responseBytes = new byte[1024];
             DatagramPacket receivePacket = new DatagramPacket(responseBytes, responseBytes.length);
