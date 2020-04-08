@@ -20,8 +20,13 @@ class PingProcessService implements Runnable {
             byte[] responseBytes = new byte[1024];
             DatagramPacket receivePacket = new DatagramPacket(responseBytes, responseBytes.length);
 
+            System.out.println("Listening on " + socket.getLocalAddress());
+            System.out.println("Listening on " + socket.getLocalPort());
+            System.out.println("Listening on " + socket.getLocalSocketAddress());
             try{
+                System.out.println("Check 2");
                 socket.receive(receivePacket);
+                System.out.println("Check 3");
             } catch (IOException e) {
                 e.printStackTrace();
             }

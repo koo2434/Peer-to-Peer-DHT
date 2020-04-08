@@ -31,12 +31,12 @@ public class P2P {
             if (type.equals("init")) {
                 int firstSuccessorNodeID = Integer.parseInt(args[2]);
                 int secondSuccessorNodeID = Integer.parseInt(args[3]);
-                int pingInterval = Integer.parseInt(args[4]);
+                int pingInterval = Integer.parseInt(args[4]) * 1000; //seconds --> ms
 
                 PeerNode node = new PeerNode(nodeID, firstSuccessorNodeID,
                                         secondSuccessorNodeID, pingInterval,
                                         PORT_OFFSET);
-                System.out.println("System starting...");
+                System.out.println("Node #" + nodeID + " starting...");
                 node.begin();
 
             } else if (type.equals("join")) {

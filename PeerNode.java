@@ -28,7 +28,7 @@ class PeerNode {
         this.PING_INTERVAL = PING_INTERVAL;
         this.PORT_OFFSET = PORT_OFFSET;
 
-        this.socket = new DatagramSocket(nodeID);
+        this.socket = new DatagramSocket(PORT_OFFSET + nodeID);
     }
 
     public void begin() throws Exception {
@@ -44,7 +44,7 @@ class PeerNode {
             this.socket, this.nodeID
         );
 
-        //p2pService.execute(PingProcessService);
+        p2pService.execute(PingProcessService);
         Future<Integer> pingFailedFuture = p2pService.submit(PingRequestService);
 
         int lostTargetID = pingFailedFuture.get();

@@ -53,6 +53,7 @@ class PingRequestService implements Callable<Integer> {
                     int newCount =  PeerNode.pingCounter.get(targetID) + 1;
                     PeerNode.pingCounter.put(targetID, newCount);
                     System.out.println("Ping request sent to Peer " + targetID);
+                    System.out.println("ADDR: " + targetAddr);
 
                     if (newCount >= 3) {
                         PeerNode.isDestAlive = false;
