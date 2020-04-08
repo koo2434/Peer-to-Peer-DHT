@@ -4,17 +4,14 @@ import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
 
-class PingRequestService implements Runnable {
+class PingRequestService implements Callable<Integer> {
 
     private int nodeID;
     private List<Integer> targetIDList;
-    private int PING_INTERVAL;
+    private final int PING_INTERVAL;
 
     private DatagramSocket socket;
     private List<SocketAddress> targetAddrList;
-
-    volatile static boolean isDestAlive = true;
-    volatile static Map<Integer, Integer> pingCounter = new HashMap<>();
 
     /**
      * Constructor.
@@ -32,15 +29,16 @@ class PingRequestService implements Runnable {
         this.socket = socket;
         this.targetAddrList = new ArrayList<>();
         for (Integer id : targetIDList) {
-            pingCounter.put(id, 0);
+            PeerNode.pingCounter.put(id, 0);
             this.targetAddrList.add(new InetSocketAddress("127.0.0.1", PORT_OFFSET + id));
         }
     }
 
     //Thread Instance sending ping to its successors
     @Override
-    public void run() {
-        while(isDestAlive) {
+    public Integer call() throws Exception {
+        int offlineTargetID = -1;
+        while(PeerNode.isDestAlive) {
             String pingMsg = "REQUEST:" + this.nodeID;
             byte[] msgBytes = pingMsg.getBytes();
 
@@ -51,19 +49,23 @@ class PingRequestService implements Runnable {
 
                     DatagramPacket pingPacket = new DatagramPacket(msgBytes, msgBytes.length, targetAddr);
                     socket.send(pingPacket);
-                    int newCount =  pingCounter.get(targetID) + 1;
-                    if (newCount >= 3) isDestAlive = false;
-                    pingCounter.put(targetID, newCount);
+
+                    int newCount =  PeerNode.pingCounter.get(targetID) + 1;
+                    PeerNode.pingCounter.put(targetID, newCount);
                     System.out.println("Ping request sent to Peer " + targetID);
+
+                    if (newCount >= 3) {
+                        PeerNode.isDestAlive = false;
+                        offlineTargetID = targetID;
+                    }
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            if(isDestAlive) Thread.sleep(PING_INTERVAL);
-
+            if(PeerNode.isDestAlive) Thread.sleep(PING_INTERVAL);
         }
 
-        
+        return offlineTargetID;
     }
 
 }
