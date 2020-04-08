@@ -27,8 +27,9 @@ class PeerNode {
         this.secondSuccessorNodeID = secondSuccessorNodeID;
         this.PING_INTERVAL = PING_INTERVAL;
         this.PORT_OFFSET = PORT_OFFSET;
-
-        this.socket = new DatagramSocket(PORT_OFFSET + nodeID);
+        
+        InetAddress receiverAddress = InetAddress.getByName("127.0.0.1");
+        this.socket = new DatagramSocket(PORT_OFFSET + nodeID, receiverAddress);
     }
 
     public void begin() throws Exception {
