@@ -44,10 +44,14 @@ class PeerNode {
             this.socket, this.nodeID
         );
 
-        p2pService.execute(PingProcessService);
+        //p2pService.execute(PingProcessService);
         Future<Integer> pingFailedFuture = p2pService.submit(PingRequestService);
 
         int lostTargetID = pingFailedFuture.get();
+        System.out.println(lostTargetID);
+        p2pService.shutdownNow();
+        return;
+
     }
 
 }

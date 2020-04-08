@@ -57,6 +57,7 @@ class PingRequestService implements Callable<Integer> {
                     if (newCount >= 3) {
                         PeerNode.isDestAlive = false;
                         offlineTargetID = targetID;
+                        System.out.println("Offline found");
                     }
                 }
             } catch (IOException e) {
@@ -65,6 +66,7 @@ class PingRequestService implements Callable<Integer> {
             if(PeerNode.isDestAlive) Thread.sleep(PING_INTERVAL);
         }
 
+        System.out.println("Quit here");
         return offlineTargetID;
     }
 
