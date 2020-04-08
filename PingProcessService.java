@@ -31,12 +31,7 @@ class PingProcessService implements Runnable {
             String type = data.split(":", 2)[0].trim();
             int clientID = Integer.parseInt(data.split(":")[1].trim());
 
-            System.out.println(data);
-            System.out.println(type);
-            System.out.println(clientID);
-
             if (type.equals("REQUEST")) {
-                //TODO: Answer Ping
                 System.out.println("Ping request received from Peer " + clientID);
 
                 String pingMsg= "RESPONSE:" + this.nodeID;
@@ -56,7 +51,6 @@ class PingProcessService implements Runnable {
                     if (count > 0) {
                         count--;
                         PeerNode.pingCounter.put(clientID, count);
-                        System.out.println("CT: " + count);
                     }
                 }
             }
