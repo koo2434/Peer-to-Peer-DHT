@@ -25,30 +25,37 @@ public class P2P {
         }
 
         try {
+
             String type = args[0].trim().toLowerCase();
             int nodeID = Integer.parseInt(args[1]);
-
             if (type.equals("init")) {
                 int firstSuccessorNodeID = Integer.parseInt(args[2]);
                 int secondSuccessorNodeID = Integer.parseInt(args[3]);
                 int pingInterval = Integer.parseInt(args[4]) * 1000; //seconds --> ms
 
-                PeerNode node = new PeerNode(nodeID, firstSuccessorNodeID,
+                NodeInitService nodeInitService = new NodeInitService(nodeID, firstSuccessorNodeID,
                                         secondSuccessorNodeID, pingInterval,
                                         PORT_OFFSET);
                 System.out.println("Node #" + nodeID + " starting...");
-                node.begin();
+                nodeInitService.begin();
 
             } else if (type.equals("join")) {
                 int knownPeerID = Integer.parseInt(args[2]);
                 int pingInterval = Integer.parseInt(args[3]);
 
                 //TODO: Implement JOIN
+                NodeJoinService JoinRequestService = new NodeJoinService(nodeID,
+                                        knownPeerID, pingInterval, PORT_OFFSET);
+
+            } else {
+                printInstruction();
+                System.out.println("Error");
+                return;
             }
 
         } catch (IllegalArgumentException e) {
             printInstruction();
-            System.out.println("ARgument");
+            System.out.println("Error");
             return;
         } catch (Exception e) {
             e.printStackTrace();

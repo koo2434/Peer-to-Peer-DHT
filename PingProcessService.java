@@ -8,10 +8,12 @@ class PingProcessService implements Runnable {
 
     private DatagramSocket socket;
     private int nodeID;
+    private NodeStatus nodeStatus;
 
-    public PingProcessService (DatagramSocket socket, int ID) {
+    public PingProcessService (DatagramSocket socket, int ID, NodeStatus nodeStatus) {
         this.socket = socket;
         this.nodeID = ID;
+        this.nodeStatus = nodeStatus;
     }
 
     @Override
@@ -45,13 +47,9 @@ class PingProcessService implements Runnable {
 
             } else if (type.equals("RESPONSE")) {
                 System.out.println("Ping response received from Peer " + clientID);
-
-                if (PeerNode.pingCounter.containsKey(clientID)) {
-                    int count = PeerNode.pingCounter.get(clientID);
-                    if (count > 0) {
-                        count--;
-                        PeerNode.pingCounter.put(clientID, count);
-                    }
+                int pingCount = this.nodeStatus.getPingCount(clientID);
+                if (pingCount > 0) {
+                    this.nodeStatus.decrementPingCount(clientID);
                 }
             }
         }

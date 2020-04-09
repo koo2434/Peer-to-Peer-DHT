@@ -10,6 +10,8 @@ class PingRequestService implements Callable<Integer> {
     private List<Integer> targetIDList;
     private final int PING_INTERVAL;
 
+    private NodeStatus nodeStatus;
+
     private DatagramSocket socket;
     private List<SocketAddress> targetAddrList;
 
@@ -21,10 +23,12 @@ class PingRequestService implements Callable<Integer> {
      * @param PING_INTERVAL how long should intervals between each ping be; milliseconds
      * @param PORT_OFFSET port number = PORT_OFFSET + ID, rule applies to all nodes in network
      */
-    public PingRequestService(DatagramSocket socket, int ID, List<Integer> targetIDList, int PING_INTERVAL, int PORT_OFFSET) throws Exception {
+    public PingRequestService(DatagramSocket socket, int ID, List<Integer> targetIDList,
+                        int PING_INTERVAL, int PORT_OFFSET, NodeStatus nodeStatus) throws Exception {
         this.nodeID = ID;
         this.targetIDList = targetIDList;
         this.PING_INTERVAL = PING_INTERVAL;
+        this.nodeStatus = nodeStatus;
 
         this.socket = socket;
         this.targetAddrList = new ArrayList<>();
@@ -38,7 +42,7 @@ class PingRequestService implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
         int offlineTargetID = -1;
-        while(PeerNode.isDestAlive) {
+        while(this.nodeStatus.isCircuitAlive()) {
             String pingMsg = "REQUEST:" + this.nodeID;
             byte[] msgBytes = pingMsg.getBytes();
 
@@ -49,13 +53,11 @@ class PingRequestService implements Callable<Integer> {
 
                     DatagramPacket pingPacket = new DatagramPacket(msgBytes, msgBytes.length, targetAddr);
                     socket.send(pingPacket);
-
-                    int newCount =  PeerNode.pingCounter.get(targetID) + 1;
-                    PeerNode.pingCounter.put(targetID, newCount);
+                    this.nodeStatus.incrementPingCount(targetID);
                     System.out.println("Ping request sent to Peer " + targetID);
 
-                    if (newCount >= 3) {
-                        PeerNode.isDestAlive = false;
+                    if (this.nodeStatus.getPingCount(targetID) >= 3) {
+                        this.nodeStatus.setCircuitAlive(false);
                         offlineTargetID = targetID;
                         System.out.println("Offline found");
                     }
@@ -63,7 +65,7 @@ class PingRequestService implements Callable<Integer> {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            if(PeerNode.isDestAlive) Thread.sleep(PING_INTERVAL);
+            if(this.nodeStatus.isCircuitAlive()) Thread.sleep(PING_INTERVAL);
         }
 
         System.out.println("Quit here");
