@@ -43,7 +43,7 @@ class PingRequestService implements Callable<Integer> {
     public Integer call() throws Exception {
         int offlineTargetID = -1;
         while(this.nodeStatus.isCircuitAlive()) {
-            String pingMsg = "REQUEST:" + this.nodeID;
+            String pingMsg = "REQUEST/PING:" + this.nodeID;
             byte[] msgBytes = pingMsg.getBytes();
 
             try{

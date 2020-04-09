@@ -33,8 +33,11 @@ public class P2P {
                 int secondSuccessorNodeID = Integer.parseInt(args[3]);
                 int pingInterval = Integer.parseInt(args[4]) * 1000; //seconds --> ms
 
-                NodeInitService nodeInitService = new NodeInitService(nodeID, firstSuccessorNodeID,
-                                        secondSuccessorNodeID, pingInterval,
+                NodeInitService nodeInitService = new NodeInitService(
+                                        nodeID,
+                                        firstSuccessorNodeID,
+                                        secondSuccessorNodeID,
+                                        pingInterval,
                                         PORT_OFFSET);
                 System.out.println("Node #" + nodeID + " starting...");
                 nodeInitService.begin();
@@ -44,9 +47,15 @@ public class P2P {
                 int pingInterval = Integer.parseInt(args[3]);
 
                 //TODO: Implement JOIN
-                NodeJoinService JoinRequestService = new NodeJoinService(nodeID,
+                JoinRequestService joinRequestService = new JoinRequestService(nodeID,
                                         knownPeerID, pingInterval, PORT_OFFSET);
-
+                List<Integer> targetIDList = joinRequestService.joinNetwork();
+                NodeInitService nodeInitService = new NodeInitService(
+                                        nodeID,
+                                        targetIDList.get(0),
+                                        targetIDList.get(1),
+                                        pingInterval,
+                                        PORT_OFFSET);
             } else {
                 printInstruction();
                 System.out.println("Error");
