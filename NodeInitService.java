@@ -40,7 +40,6 @@ class NodeInitService {
     public void begin() throws Exception {
         ExecutorService p2pService = Executors.newCachedThreadPool();
 
-
         PingRequestService pingRequestService = new PingRequestService(
             this.udpSocket, this.nodeID, this.successorNodeIDList,
             this.PING_INTERVAL, this.PORT_OFFSET,
@@ -49,10 +48,10 @@ class NodeInitService {
         PingProcessService pingProcessService = new PingProcessService (
             this.udpSocket, this.nodeID, this.nodeStatus
         );
-        /*
-        JoinProcessService joinProcessService = new JoinProcessService(
-            this.tcpSocket
-        );*/
+
+        TCPProcessService tcpProcessService = new TCPProcessService(
+            this.tcpSocket, this.nodeID, this.successorNodeIDList
+        );
 
         p2pService.execute(pingProcessService);
         Future<Integer> pingFailedFuture = p2pService.submit(pingRequestService);

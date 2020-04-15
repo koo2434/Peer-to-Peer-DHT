@@ -46,7 +46,6 @@ public class P2P {
                 int knownPeerID = Integer.parseInt(args[2]);
                 int pingInterval = Integer.parseInt(args[3]);
 
-                //TODO: Implement JOIN
                 JoinRequestService joinRequestService = new JoinRequestService(nodeID,
                                         knownPeerID, pingInterval, PORT_OFFSET);
                 List<Integer> targetIDList = joinRequestService.joinNetwork();

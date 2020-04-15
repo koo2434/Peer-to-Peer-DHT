@@ -3,27 +3,43 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-class JoinProcessService implements Callable<List<Integer>>{
+class JoinProcessService implements Runnable {
 
-    private ServerSocket serverSocket;
+    private Socket client;
+    private int nodeID;
+    private List<Integer> successorNodeIDList;
+    private int clientNodeID;
 
-    public JoinProcessService(ServerSocket socket) {
-        this.serverSocket = socket;
+    public JoinProcessService(Socket socket, int nodeID,
+                             int successorNodeIDList, int clientNodeID) {
+        this.client = socket;
+        this.nodeID = nodeID;
+        this.successorNodeIDList = successorNodeIDList;
+        this.clientNodeID = clientNodeID;
     }
 
     @Override
-    public List<Integer> call() throws Exception {
+    public void run() {
         try {
-            Socket clientSocket = this.serverSocket.accept();
-            DataOutputStream out = new DataOutputStream(client.getOutputStream());
-            DataInputStream in = new DataInputStream(client.getInputStream());
-
-            String request = in.readUTF();
+            DataOutputStream out = new DataOutputStream(this.client.getOutputStream());
+            int firstSuccessorNodeID = this.successorNodeIDList.get(0);
+            int secondSuccessorNodeID = this.successorNodeIDList.get(1);
 
             //  REPONSE/JOIN:APPROVED:4:5
-            String r1 = "RESPONSE/JOIN:APPROVED" + fS + ":" + sS;
+            String r1 = "RESPONSE/JOIN:APPROVED:" + this.successorNodeIDList.get(0)
+                                            + ":" + this.successorNodeIDList.get(1);
             //  REPONSE/JOIN:DELEGATE:4
-            String r2 = "RESPONSE/JOIN:DELEGATE:" + ID;
+            String r2 = "RESPONSE/JOIN:DELEGATE:" + this.successorNodeIDList.get(0);
+
+            if (this.clientNodeID > this.successorNodeID ||
+                    this.clientNodeID < this.nodeID) {
+                out.writeUTF(r2);
+            } else {
+                out.writeUTF(r1);
+                //Process new successor
+
+            }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
