@@ -8,7 +8,7 @@ import java.util.concurrent.*;
 class NodeInitService {
 
     private int nodeID;
-    private List<Integer> successorNodeIDList;
+    private volatile List<Integer> successorNodeIDList;
 
     private final int PING_INTERVAL;
     private final int PORT_OFFSET;
@@ -55,10 +55,9 @@ class NodeInitService {
 
         p2pService.execute(pingProcessService);
         Future<Integer> pingFailedFuture = p2pService.submit(pingRequestService);
-        //Future<List<Integer>> joinFuture = p2pService.submit(joinProcessService);
+        p2pService.execute(tcpProcessService);
 
         int lostTargetID = pingFailedFuture.get();
-        //List<Integer> newTargetIDs = joinFuture.get();
         System.out.println(lostTargetID);
         p2pService.shutdownNow();
         return;

@@ -7,11 +7,11 @@ class JoinProcessService implements Runnable {
 
     private Socket client;
     private int nodeID;
-    private List<Integer> successorNodeIDList;
+    private volatile List<Integer> successorNodeIDList;
     private int clientNodeID;
 
     public JoinProcessService(Socket socket, int nodeID,
-                             int successorNodeIDList, int clientNodeID) {
+                             List<Integer> successorNodeIDList, int clientNodeID) {
         this.client = socket;
         this.nodeID = nodeID;
         this.successorNodeIDList = successorNodeIDList;
@@ -26,18 +26,19 @@ class JoinProcessService implements Runnable {
             int secondSuccessorNodeID = this.successorNodeIDList.get(1);
 
             //  REPONSE/JOIN:APPROVED:4:5
-            String r1 = "RESPONSE/JOIN:APPROVED:" + this.successorNodeIDList.get(0)
-                                            + ":" + this.successorNodeIDList.get(1);
+            String r1 = "RESPONSE/JOIN:APPROVED:" + firstSuccessorNodeID
+                                            + ":" + secondSuccessorNodeID;
             //  REPONSE/JOIN:DELEGATE:4
-            String r2 = "RESPONSE/JOIN:DELEGATE:" + this.successorNodeIDList.get(0);
+            String r2 = "RESPONSE/JOIN:DELEGATE:" + firstSuccessorNodeID;
 
-            if (this.clientNodeID > this.successorNodeID ||
+            if (this.clientNodeID > firstSuccessorNodeID ||
                     this.clientNodeID < this.nodeID) {
                 out.writeUTF(r2);
             } else {
                 out.writeUTF(r1);
                 //Process new successor
-
+                successorNodeIDList.set(1, successorNodeIDList.get(0));
+                successorNodeIDList.set(0, this.clientNodeID);
             }
 
         } catch (IOException e) {

@@ -7,7 +7,7 @@ class TCPProcessService implements Runnable {
 
     private ServerSocket socket;
     private int nodeID;
-    private List<Integer> successorNodeIDList;
+    private volatile List<Integer> successorNodeIDList;
 
     public TCPProcessService (ServerSocket socket,
                               int nodeID,
@@ -21,17 +21,19 @@ class TCPProcessService implements Runnable {
     public void run() {
         while (true) {
             try {
-                Socket clientSocket = this.serverSocket.accept();
+                Socket clientSocket = this.socket.accept();
                 DataInputStream in = new DataInputStream(clientSocket.getInputStream());
 
                 String request = in.readUTF();
                 String requestType = request.split(":")[0].trim();
 
                 if (requestType.equals("REQUEST/JOIN")) {
+                    System.out.println("Processing JOIN");
                     JoinProcessService joinProcessService = new JoinProcessService(
                                                     clientSocket, this.nodeID,
-                                                    this.successorNodeIDList, request.split(":")[0]);
-                    joinProcessService.start();
+                                                    this.successorNodeIDList,
+                                                    Integer.parseInt(request.split(":")[1]));
+                    new Thread(joinProcessService).start();
                 } else {
                     //Start service that uses TCP protocol
                 }

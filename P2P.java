@@ -1,4 +1,5 @@
 
+import java.util.*;
 public class P2P {
 
     public static final int PORT_OFFSET = 12000;
@@ -44,7 +45,7 @@ public class P2P {
 
             } else if (type.equals("join")) {
                 int knownPeerID = Integer.parseInt(args[2]);
-                int pingInterval = Integer.parseInt(args[3]);
+                int pingInterval = Integer.parseInt(args[3]) * 1000;
 
                 JoinRequestService joinRequestService = new JoinRequestService(nodeID,
                                         knownPeerID, pingInterval, PORT_OFFSET);
@@ -55,6 +56,8 @@ public class P2P {
                                         targetIDList.get(1),
                                         pingInterval,
                                         PORT_OFFSET);
+                System.out.println("Node #" + nodeID + " starting...");
+                nodeInitService.begin();
             } else {
                 printInstruction();
                 System.out.println("Error");

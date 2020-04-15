@@ -10,7 +10,7 @@ class NodeStatus {
 
     public NodeStatus() {
         this.circuitAlive = true;
-        this.pingCounter = new HashMap();
+        this.pingCounter = new HashMap<>();
     }
 
     public boolean isCircuitAlive() {

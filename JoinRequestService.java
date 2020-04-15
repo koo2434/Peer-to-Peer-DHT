@@ -22,19 +22,20 @@ class JoinRequestService {
         this.PORT_OFFSET = PORT_OFFSET;
 
         InetAddress receiverAddress = InetAddress.getByName("127.0.0.1");
-        this.socket = new Socket(receiverAddress, PORT_OFFSET + nodeID);
+        this.socket = new Socket(receiverAddress, PORT_OFFSET + knownPeerID);
     }
 
     public List<Integer> joinNetwork() {
         try{
-            DataOutputStream out = new DataOutputStream(this.socket.getOutputStream());
-            DataInputStream in = new DataInputStream(this.socket.getInputStream());
 
             String response;
             boolean foundPredecessor = false;
-            List<Integer> targetNodeIDs = new ArrayList();
+            List<Integer> targetNodeIDs = new ArrayList<>();
 
             while (!foundPredecessor) {
+                DataOutputStream out = new DataOutputStream(this.socket.getOutputStream());
+                DataInputStream in = new DataInputStream(this.socket.getInputStream());
+                
                 String joinRequestMsg = "REQUEST/JOIN:" + this.nodeID;
                 out.writeUTF(joinRequestMsg);
 
@@ -45,6 +46,7 @@ class JoinRequestService {
                 if (responseType.equals("RESPONSE/JOIN")) {
                     String approval = response.split(":")[1].trim();
                     if (approval.equals("APPROVED")) {
+                        System.out.println("APPROVED");
                         int firstSuccessorNodeID = Integer.parseInt(response.split(":")[2]);
                         int secondSuccessorNodeID = Integer.parseInt(response.split(":")[3]);
 
@@ -56,9 +58,10 @@ class JoinRequestService {
                         targetNodeIDs.add(secondSuccessorNodeID);
                         foundPredecessor = true;
                     } else if (approval.equals("DELEGATE")) {
+                        System.out.println("DELEGATED");
+
                         int targetNodeID = Integer.parseInt(response.split(":")[2]);
                         InetAddress receiverAddress = InetAddress.getByName("127.0.0.1");
-                        this.socket.close();
                         this.socket = new Socket(receiverAddress, PORT_OFFSET + targetNodeID);
                     }
                 }

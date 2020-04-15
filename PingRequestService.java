@@ -7,7 +7,7 @@ import java.util.concurrent.*;
 class PingRequestService implements Callable<Integer> {
 
     private int nodeID;
-    private List<Integer> targetIDList;
+    private volatile List<Integer> targetIDList;
     private final int PING_INTERVAL;
 
     private NodeStatus nodeStatus;
