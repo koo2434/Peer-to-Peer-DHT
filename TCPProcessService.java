@@ -8,13 +8,16 @@ class TCPProcessService implements Runnable {
     private ServerSocket socket;
     private int nodeID;
     private volatile List<Integer> successorNodeIDList;
+    private NodeStatus nodeStatus;
 
     public TCPProcessService (ServerSocket socket,
                               int nodeID,
-                              List<Integer> successorNodeIDList) {
+                              List<Integer> successorNodeIDList,
+                              NodeStatus nodeStatus) {
         this.socket = socket;
         this.nodeID = nodeID;
         this.successorNodeIDList = successorNodeIDList;
+        this.nodeStatus = nodeStatus;
     }
 
     @Override
@@ -32,7 +35,8 @@ class TCPProcessService implements Runnable {
                     JoinProcessService joinProcessService = new JoinProcessService(
                                                     clientSocket, this.nodeID,
                                                     this.successorNodeIDList,
-                                                    Integer.parseInt(request.split(":")[1]));
+                                                    Integer.parseInt(request.split(":")[1]),
+                                                    this.nodeStatus);
                     new Thread(joinProcessService).start();
                 } else {
                     //Start service that uses TCP protocol

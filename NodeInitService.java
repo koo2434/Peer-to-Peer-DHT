@@ -50,7 +50,7 @@ class NodeInitService {
         );
 
         TCPProcessService tcpProcessService = new TCPProcessService(
-            this.tcpSocket, this.nodeID, this.successorNodeIDList
+            this.tcpSocket, this.nodeID, this.successorNodeIDList, this.nodeStatus
         );
 
         p2pService.execute(pingProcessService);

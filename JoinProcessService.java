@@ -9,13 +9,16 @@ class JoinProcessService implements Runnable {
     private int nodeID;
     private volatile List<Integer> successorNodeIDList;
     private int clientNodeID;
+    private NodeStatus nodeStatus;
 
     public JoinProcessService(Socket socket, int nodeID,
-                             List<Integer> successorNodeIDList, int clientNodeID) {
+                             List<Integer> successorNodeIDList, int clientNodeID,
+                             NodeStatus nodeStatus) {
         this.client = socket;
         this.nodeID = nodeID;
         this.successorNodeIDList = successorNodeIDList;
         this.clientNodeID = clientNodeID;
+        this.nodeStatus = nodeStatus;
     }
 
     @Override
@@ -39,6 +42,8 @@ class JoinProcessService implements Runnable {
                 //Process new successor
                 successorNodeIDList.set(1, successorNodeIDList.get(0));
                 successorNodeIDList.set(0, this.clientNodeID);
+                this.nodeStatus.setNewPingCounter(successorNodeIDList);
+
             }
 
         } catch (IOException e) {

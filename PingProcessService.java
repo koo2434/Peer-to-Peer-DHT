@@ -18,6 +18,7 @@ class PingProcessService implements Runnable {
 
     @Override
     public void run() {
+        System.out.println("This works!");
         while (true) {
             byte[] responseBytes = new byte[1024];
             DatagramPacket receivePacket = new DatagramPacket(responseBytes, responseBytes.length);
@@ -30,6 +31,7 @@ class PingProcessService implements Runnable {
 
             SocketAddress clientAddr = receivePacket.getSocketAddress();
             String data = new String(receivePacket.getData()).trim();
+            System.out.println(data);
             String type = data.split(":", 2)[0].trim();
             int clientID = Integer.parseInt(data.split(":")[1].trim());
 

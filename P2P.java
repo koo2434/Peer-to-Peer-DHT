@@ -50,6 +50,7 @@ public class P2P {
                 JoinRequestService joinRequestService = new JoinRequestService(nodeID,
                                         knownPeerID, pingInterval, PORT_OFFSET);
                 List<Integer> targetIDList = joinRequestService.joinNetwork();
+                System.out.println("SUCCESSORS: " + targetIDList.get(0) + " " + targetIDList.get(1));
                 NodeInitService nodeInitService = new NodeInitService(
                                         nodeID,
                                         targetIDList.get(0),

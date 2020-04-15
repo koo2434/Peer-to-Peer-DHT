@@ -9,11 +9,11 @@ class PingRequestService implements Callable<Integer> {
     private int nodeID;
     private volatile List<Integer> targetIDList;
     private final int PING_INTERVAL;
+    private final int PORT_OFFSET;
 
     private NodeStatus nodeStatus;
 
     private DatagramSocket socket;
-    private List<SocketAddress> targetAddrList;
 
     /**
      * Constructor.
@@ -28,14 +28,10 @@ class PingRequestService implements Callable<Integer> {
         this.nodeID = ID;
         this.targetIDList = targetIDList;
         this.PING_INTERVAL = PING_INTERVAL;
+        this.PORT_OFFSET = PORT_OFFSET;
         this.nodeStatus = nodeStatus;
 
         this.socket = socket;
-        this.targetAddrList = new ArrayList<>();
-        for (Integer id : targetIDList) {
-            PeerNode.pingCounter.put(id, 0);
-            this.targetAddrList.add(new InetSocketAddress("127.0.0.1", PORT_OFFSET + id));
-        }
     }
 
     //Thread Instance sending ping to its successors
@@ -47,9 +43,9 @@ class PingRequestService implements Callable<Integer> {
             byte[] msgBytes = pingMsg.getBytes();
 
             try{
-                for (int i = 0; i < this.targetAddrList.size(); i++) {
+                for (int i = 0; i < this.targetIDList.size(); i++) {
                     int targetID = this.targetIDList.get(i);
-                    SocketAddress targetAddr = this.targetAddrList.get(i);
+                    SocketAddress targetAddr = new InetSocketAddress("127.0.0.1", PORT_OFFSET + targetID);
 
                     DatagramPacket pingPacket = new DatagramPacket(msgBytes, msgBytes.length, targetAddr);
                     socket.send(pingPacket);
