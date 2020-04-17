@@ -39,20 +39,20 @@ class PingRequestService implements Callable<Integer> {
     public Integer call() throws Exception {
         int offlineTargetID = -1;
         while(this.nodeStatus.isCircuitAlive()) {
-            String pingMsg = "REQUEST/PING:" + this.nodeID;
-            byte[] msgBytes = pingMsg.getBytes();
-
             try{
                 for (int i = 0; i < this.targetIDList.size(); i++) {
+                    String pingMsg = "REQUEST/PING:" + this.nodeID + ":" + i;
+                    byte[] msgBytes = pingMsg.getBytes();
+                    
                     int targetID = this.targetIDList.get(i);
                     SocketAddress targetAddr = new InetSocketAddress("127.0.0.1", PORT_OFFSET + targetID);
 
                     DatagramPacket pingPacket = new DatagramPacket(msgBytes, msgBytes.length, targetAddr);
                     socket.send(pingPacket);
-                    this.nodeStatus.incrementPingCount(targetID);
+                    this.nodeStatus.incrementOutPingCount(targetID);
                     System.out.println("Ping request sent to Peer " + targetID);
 
-                    if (this.nodeStatus.getPingCount(targetID) >= 3) {
+                    if (this.nodeStatus.getOutPingCount(targetID) >= 3) {
                         this.nodeStatus.setCircuitAlive(false);
                         offlineTargetID = targetID;
                         System.out.println("Offline found");

@@ -34,16 +34,25 @@ class JoinProcessService implements Runnable {
             //  REPONSE/JOIN:DELEGATE:4
             String r2 = "RESPONSE/JOIN:DELEGATE:" + firstSuccessorNodeID;
 
-            if (this.clientNodeID > firstSuccessorNodeID ||
-                    this.clientNodeID < this.nodeID) {
+            if (this.clientNodeID < this.nodeID) {
                 out.writeUTF(r2);
+            } else if (this.clientNodeID > this.nodeID) {
+                if (this.clientNodeID < firstSuccessorNodeID
+                    || this.nodeID > firstSuccessorNodeID) {
+                        out.writeUTF(r1);
+                        //Alert its predecessor
+                        this.nodeStatus.setPredecessorNewSuccessor(clientNodeID);
+                        //Process new successor
+                        successorNodeIDList.set(1, successorNodeIDList.get(0));
+                        successorNodeIDList.set(0, this.clientNodeID);
+                        this.nodeStatus.setNewOutPingCount (successorNodeIDList);
+                } else if (this.nodeID < firstSuccessorNodeID) {
+                    out.writeUTF(r2);
+                } else {
+                    System.out.println("ERROR CASE");
+                }
             } else {
-                out.writeUTF(r1);
-                //Process new successor
-                successorNodeIDList.set(1, successorNodeIDList.get(0));
-                successorNodeIDList.set(0, this.clientNodeID);
-                this.nodeStatus.setNewPingCounter(successorNodeIDList);
-
+                System.out.println("ERROR CASE");
             }
 
         } catch (IOException e) {

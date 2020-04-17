@@ -38,8 +38,14 @@ class TCPProcessService implements Runnable {
                                                     Integer.parseInt(request.split(":")[1]),
                                                     this.nodeStatus);
                     new Thread(joinProcessService).start();
-                } else {
-                    //Start service that uses TCP protocol
+                } else if (requestType.equals("NOTIFY/CHANGE_OF_SUCCESSOR")){
+                    //TODO: Implement change of successor
+                    System.out.println("Changing Successors");
+
+                    int newSuccessor = Integer.parseInt(request.split(":")[1].trim());
+                    successorNodeIDList.set(1, successorNodeIDList.get(0));
+                    successorNodeIDList.set(0, newSuccessor);
+                    this.nodeStatus.setNewOutPingCount(successorNodeIDList);
                 }
 
             } catch (IOException e) {

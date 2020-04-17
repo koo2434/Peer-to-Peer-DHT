@@ -46,7 +46,7 @@ class NodeInitService {
             this.nodeStatus
         );
         PingProcessService pingProcessService = new PingProcessService (
-            this.udpSocket, this.nodeID, this.nodeStatus
+            this.udpSocket, this.nodeID, this.PORT_OFFSET, this.nodeStatus
         );
 
         TCPProcessService tcpProcessService = new TCPProcessService(
