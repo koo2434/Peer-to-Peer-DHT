@@ -43,8 +43,7 @@ class TCPProcessService implements Runnable {
                     System.out.println("Changing Successors");
 
                     int newSuccessor = Integer.parseInt(request.split(":")[1].trim());
-                    successorNodeIDList.set(1, successorNodeIDList.get(0));
-                    successorNodeIDList.set(0, newSuccessor);
+                    successorNodeIDList.set(1, newSuccessor);
                     this.nodeStatus.setNewOutPingCount(successorNodeIDList);
                 }
 
