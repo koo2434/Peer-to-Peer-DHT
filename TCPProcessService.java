@@ -39,7 +39,6 @@ class TCPProcessService implements Runnable {
                                                     this.nodeStatus);
                     new Thread(joinProcessService).start();
                 } else if (requestType.equals("NOTIFY/CHANGE_OF_SUCCESSOR")){
-                    //TODO: Implement change of successor
                     System.out.println("Changing Successors");
 
                     int newSuccessor = Integer.parseInt(request.split(":")[1].trim());
