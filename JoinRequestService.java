@@ -35,18 +35,17 @@ class JoinRequestService {
             while (!foundPredecessor) {
                 DataOutputStream out = new DataOutputStream(this.socket.getOutputStream());
                 DataInputStream in = new DataInputStream(this.socket.getInputStream());
-                
+
                 String joinRequestMsg = "REQUEST/JOIN:" + this.nodeID;
                 out.writeUTF(joinRequestMsg);
 
                 response = in.readUTF();
-                System.out.println(response);
 
                 String responseType = response.split(":", 2)[0].trim();
                 if (responseType.equals("RESPONSE/JOIN")) {
                     String approval = response.split(":")[1].trim();
                     if (approval.equals("APPROVED")) {
-                        System.out.println("APPROVED");
+                        System.out.println("Join APPROVED");
                         int firstSuccessorNodeID = Integer.parseInt(response.split(":")[2]);
                         int secondSuccessorNodeID = Integer.parseInt(response.split(":")[3]);
 

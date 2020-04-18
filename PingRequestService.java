@@ -38,12 +38,13 @@ class PingRequestService implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
         int offlineTargetID = -1;
-        while(this.nodeStatus.isCircuitAlive()) {
+        while(this.nodeStatus.isCircuitAlive()
+                && this.nodeStatus.isNodeStayAlive()) {
             try{
                 for (int i = 0; i < this.targetIDList.size(); i++) {
                     String pingMsg = "REQUEST/PING:" + this.nodeID + ":" + i;
                     byte[] msgBytes = pingMsg.getBytes();
-                    
+
                     int targetID = this.targetIDList.get(i);
                     SocketAddress targetAddr = new InetSocketAddress("127.0.0.1", PORT_OFFSET + targetID);
 
@@ -63,7 +64,7 @@ class PingRequestService implements Callable<Integer> {
             }
             if(this.nodeStatus.isCircuitAlive()) Thread.sleep(PING_INTERVAL);
         }
-
+        
         System.out.println("Quit here");
         return offlineTargetID;
     }

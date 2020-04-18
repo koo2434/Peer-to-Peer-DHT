@@ -29,7 +29,7 @@ class NodeInitService {
         this.PORT_OFFSET = PORT_OFFSET;
 
         //Shared NodeStatus instance for node and network status management.
-        this.nodeStatus = new NodeStatus();
+        this.nodeStatus = new NodeStatus(nodeID, this.successorNodeIDList);
 
         InetAddress addr = InetAddress.getByName("127.0.0.1");
         int port = PORT_OFFSET + nodeID;
@@ -46,20 +46,28 @@ class NodeInitService {
             this.nodeStatus
         );
         PingProcessService pingProcessService = new PingProcessService (
-            this.udpSocket, this.nodeID, this.PORT_OFFSET, this.nodeStatus
+            this.udpSocket, this.nodeID, this.successorNodeIDList,
+            this.PORT_OFFSET,
+            this.nodeStatus
         );
 
         TCPProcessService tcpProcessService = new TCPProcessService(
-            this.tcpSocket, this.nodeID, this.successorNodeIDList, this.nodeStatus
+            this.tcpSocket, this.nodeID, this.successorNodeIDList,
+            this.nodeStatus
+        );
+        UserRequestProcessService userRequestProcessService = new UserRequestProcessService(
+            this.nodeStatus
         );
 
         p2pService.execute(pingProcessService);
         Future<Integer> pingFailedFuture = p2pService.submit(pingRequestService);
         p2pService.execute(tcpProcessService);
+        p2pService.execute(userRequestProcessService);
 
         int lostTargetID = pingFailedFuture.get();
-        System.out.println(lostTargetID);
-        p2pService.shutdownNow();
+        System.out.println("LOST: " + lostTargetID);
+        p2pService.shutdown();
+        System.out.println("Quit complete.");
         return;
 
     }

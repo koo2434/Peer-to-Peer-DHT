@@ -5,23 +5,23 @@ import java.util.*;
  */
 class NodeStatus {
 
-    private volatile boolean circuitAlive;
     private volatile Map<Integer, Integer> outPingCount;
-    private boolean notifyPredecessor;
-    private int predecessorNewSuccessor;
 
-    public NodeStatus() {
-        this.circuitAlive = true;
+    private volatile boolean notifyNewSuccessor;
+    private volatile int newSuccessor;
+
+    private volatile boolean circuitAlive;
+
+    private volatile boolean nodeStayAlive;
+    private volatile boolean quitComplete;
+
+    public NodeStatus(int nodeID, List<Integer> successorIDList) {
         this.outPingCount = new HashMap<>();
-        this.notifyPredecessor = false;
-        this.predecessorNewSuccessor = -1;
-    }
-
-    public boolean isCircuitAlive() {
-        return this.circuitAlive;
-    }
-    public synchronized void setCircuitAlive(boolean circuitStatus) {
-        this.circuitAlive = circuitStatus;
+        this.notifyNewSuccessor = false;
+        this.newSuccessor = -1;
+        this.circuitAlive = true;
+        this.nodeStayAlive = true;
+        this.quitComplete = false;
     }
 
     /**
@@ -85,16 +85,36 @@ class NodeStatus {
         return oldIDs;
     }
 
-    public void setPredecessorNewSuccessor(int clientNodeID) {
-        this.notifyPredecessor = true;
-        this.predecessorNewSuccessor = clientNodeID;
+    public void setNewSuccessor(int clientNodeID) {
+        this.notifyNewSuccessor = true;
+        this.newSuccessor = clientNodeID;
     }
-    public boolean isNotifyPredecessor() {
-        return this.notifyPredecessor;
+    public int getNewSuccessor() {
+        return this.newSuccessor;
     }
-    public int getPredecessorNewSuccessor() {
-        return this.predecessorNewSuccessor;
+    public void setNotifyNewSuccessor(boolean notifyNewSuccessor) {
+        this.notifyNewSuccessor = notifyNewSuccessor;
     }
-
+    public boolean isNotifyNewSuccessor() {
+        return this.notifyNewSuccessor;
+    }
+    public boolean isCircuitAlive() {
+        return this.circuitAlive;
+    }
+    public synchronized void setCircuitAlive(boolean circuitStatus) {
+        this.circuitAlive = circuitStatus;
+    }
+    public boolean isNodeStayAlive() {
+        return this.nodeStayAlive;
+    }
+    public void setNodeStayAlive(boolean nodeStayAlive) {
+        this.nodeStayAlive = nodeStayAlive;
+    }
+    public boolean isQuitComplete() {
+        return this.quitComplete;
+    }
+    public void setQuitComplete(boolean quitComplete) {
+        this.quitComplete = quitComplete;
+    }
 
 }
