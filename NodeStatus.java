@@ -7,19 +7,25 @@ class NodeStatus {
 
     private volatile Map<Integer, Integer> outPingCount;
 
-    private volatile boolean notifyNewSuccessor;
-    private volatile int newSuccessor;
+    private volatile boolean notifyJoinedSuccessor;
+    private volatile int joinedSuccessor;
 
-    private volatile boolean circuitAlive;
+    private volatile boolean secondarySuccessorReceived;
+    private volatile int secondarySuccessor;
+
+    private volatile boolean successorsChanging;
 
     private volatile boolean nodeStayAlive;
     private volatile boolean quitComplete;
 
     public NodeStatus(int nodeID, List<Integer> successorIDList) {
         this.outPingCount = new HashMap<>();
-        this.notifyNewSuccessor = false;
-        this.newSuccessor = -1;
-        this.circuitAlive = true;
+        this.notifyJoinedSuccessor = false;
+        this.joinedSuccessor = -1;
+        this.secondarySuccessorReceived = false;
+        this.secondarySuccessor = -1;
+        this.successorsChanging = false;
+
         this.nodeStayAlive = true;
         this.quitComplete = false;
     }
@@ -50,14 +56,9 @@ class NodeStatus {
             this.outPingCount.put(id, 1);
         }
     }
-    /**
-     * Setter of ping count, value of outPingCount. Decrements the ping count
-     * by 1 if @param exists.
-     * @param id nodeID of the pinging target.
-     */
-    public synchronized void decrementOutPingCount (int id) {
-        if (this.outPingCount.containsKey(id) && this.outPingCount.get(id) > 0) {
-            this.outPingCount.put(id, this.outPingCount.get(id) - 1);
+    public synchronized void setOutPingCount (int id, int ct) {
+        if (this.outPingCount.containsKey(id)) {
+            this.outPingCount.put(id, ct);
         }
     }
 
@@ -85,24 +86,36 @@ class NodeStatus {
         return oldIDs;
     }
 
-    public void setNewSuccessor(int clientNodeID) {
-        this.notifyNewSuccessor = true;
-        this.newSuccessor = clientNodeID;
+    public void setJoinedSuccessor(int clientNodeID) {
+        this.notifyJoinedSuccessor = true;
+        this.joinedSuccessor = clientNodeID;
     }
-    public int getNewSuccessor() {
-        return this.newSuccessor;
+    public int getJoinedSuccessor() {
+        return this.joinedSuccessor;
     }
-    public void setNotifyNewSuccessor(boolean notifyNewSuccessor) {
-        this.notifyNewSuccessor = notifyNewSuccessor;
+    public void setNotifyJoinedSuccessor(boolean notifyJoinedSuccessor) {
+        this.notifyJoinedSuccessor = notifyJoinedSuccessor;
     }
-    public boolean isNotifyNewSuccessor() {
-        return this.notifyNewSuccessor;
+    public boolean isNotifyJoinedSuccessor() {
+        return this.notifyJoinedSuccessor;
     }
-    public boolean isCircuitAlive() {
-        return this.circuitAlive;
+    public boolean isSecondarySuccessorReceived() {
+        return this.secondarySuccessorReceived;
     }
-    public synchronized void setCircuitAlive(boolean circuitStatus) {
-        this.circuitAlive = circuitStatus;
+    public void setSecondarySuccessorReceived(boolean secondarySuccessorReceived) {
+        this.secondarySuccessorReceived = secondarySuccessorReceived;
+    }
+    public int getSecondarySuccessor() {
+        return this.secondarySuccessor;
+    }
+    public void setSecondarySuccessor(int secondarySuccessor) {
+        this.secondarySuccessor = secondarySuccessor;
+    }
+    public boolean isSuccessorsChanging(){
+        return this.successorsChanging;
+    }
+    public void setSuccessorsChanging(boolean successorsChanging) {
+        this.successorsChanging = successorsChanging;
     }
     public boolean isNodeStayAlive() {
         return this.nodeStayAlive;

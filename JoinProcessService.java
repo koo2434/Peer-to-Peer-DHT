@@ -41,8 +41,8 @@ class JoinProcessService implements Runnable {
                     || this.nodeID > firstSuccessorNodeID) {
                         out.writeUTF(r1);
                         //Alert its predecessor
-                        this.nodeStatus.setNotifyNewSuccessor(true);
-                        this.nodeStatus.setNewSuccessor(clientNodeID);
+                        this.nodeStatus.setJoinedSuccessor(clientNodeID);
+                        this.nodeStatus.setNotifyJoinedSuccessor(true);
                         //Process new successor
                         successorNodeIDList.set(1, successorNodeIDList.get(0));
                         successorNodeIDList.set(0, this.clientNodeID);

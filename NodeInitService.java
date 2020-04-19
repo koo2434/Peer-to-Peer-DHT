@@ -53,6 +53,7 @@ class NodeInitService {
 
         TCPProcessService tcpProcessService = new TCPProcessService(
             this.tcpSocket, this.nodeID, this.successorNodeIDList,
+            this.PORT_OFFSET,
             this.nodeStatus
         );
         UserRequestProcessService userRequestProcessService = new UserRequestProcessService(

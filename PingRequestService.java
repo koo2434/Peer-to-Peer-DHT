@@ -38,8 +38,8 @@ class PingRequestService implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
         int offlineTargetID = -1;
-        while(this.nodeStatus.isCircuitAlive()
-                && this.nodeStatus.isNodeStayAlive()) {
+        boolean circuitAlive = true;
+        while(this.nodeStatus.isNodeStayAlive()) {
             try{
                 for (int i = 0; i < this.targetIDList.size(); i++) {
                     String pingMsg = "REQUEST/PING:" + this.nodeID + ":" + i;
@@ -54,19 +54,52 @@ class PingRequestService implements Callable<Integer> {
                     System.out.println("Ping request sent to Peer " + targetID);
 
                     if (this.nodeStatus.getOutPingCount(targetID) >= 3) {
-                        this.nodeStatus.setCircuitAlive(false);
+                        circuitAlive = false;
                         offlineTargetID = targetID;
-                        System.out.println("Offline found");
+                        System.out.println("Offline found: " + offlineTargetID);
                     }
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            if(this.nodeStatus.isCircuitAlive()) Thread.sleep(PING_INTERVAL);
+            if(this.nodeStatus.isNodeStayAlive()) Thread.sleep(PING_INTERVAL);
+            if(!circuitAlive) {
+                this.nodeStatus.setSuccessorsChanging(true);
+                if (offlineTargetID == this.targetIDList.get(0)) {
+                    this.resetPrimarySuccessor(targetIDList.get(1));
+                } else {
+                    this.resetPrimarySuccessor(targetIDList.get(0));
+                }
+            }
+            circuitAlive = true;
         }
-        
-        System.out.println("Quit here");
         return offlineTargetID;
+    }
+    private synchronized void resetPrimarySuccessor (int clientID) {
+        try {
+            Socket requestSocket = new Socket(InetAddress.getByName("127.0.0.1"), this.PORT_OFFSET + clientID);
+            DataOutputStream out = new DataOutputStream(requestSocket.getOutputStream());
+            DataInputStream in = new DataInputStream(requestSocket.getInputStream());
+
+            String requestSuccessorMsg = "REQUEST/SUCCESSORS:" + this.nodeID;
+            out.writeUTF(requestSuccessorMsg);
+            System.out.println("Request sent to " + clientID);
+
+            while (!this.nodeStatus.isSecondarySuccessorReceived()) {
+                try {
+                    Thread.sleep(500);
+                    System.out.println("Sleeping...");
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            this.nodeStatus.setSecondarySuccessorReceived(false);
+            this.targetIDList.set(0, this.targetIDList.get(1));
+            this.targetIDList.set(1, this.nodeStatus.getSecondarySuccessor());
+        } catch (IOException e) {
+            System.out.println("Failed to notify predecessor Error");
+            e.printStackTrace();
+        }
     }
 
 }

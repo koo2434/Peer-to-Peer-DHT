@@ -45,15 +45,14 @@ class PingProcessService implements Runnable {
                 System.out.println("Ping request received from Peer " + clientID);
 
                 int successorPosition = Integer.parseInt(data[2].trim());
-                System.out.println(successorPosition);
 
                 //If JOIN occurred and the node from which we recieved a ping
                 //  is affected by the JOIN operation
                 //  = change of successor by immediate predecessor
-                if (this.nodeStatus.isNotifyNewSuccessor()
+                if (this.nodeStatus.isNotifyJoinedSuccessor()
                         && successorPosition == 0) {
-                    this.nodeStatus.setNotifyNewSuccessor(false);
-                    this.notifyNewSuccessor(clientID);
+                    this.nodeStatus.setNotifyJoinedSuccessor(false);
+                    this.notifyJoinedSuccessor(clientID);
                 }
                 //If the node is trying to quit:
                 if (!this.nodeStatus.isNodeStayAlive()) {
@@ -74,20 +73,20 @@ class PingProcessService implements Runnable {
                 System.out.println("Ping response received from Peer " + clientID);
                 int pingCount = this.nodeStatus.getOutPingCount(clientID);
                 if (pingCount > 0) {
-                    this.nodeStatus.decrementOutPingCount(clientID);
+                    this.nodeStatus.setOutPingCount(clientID, 0);
                 }
             }
         }
         this.nodeStatus.setQuitComplete(true);
     }
 
-    private void notifyNewSuccessor(int clientID) {
+    private void notifyJoinedSuccessor(int clientID) {
         try {
-            int newSuccessor = this.nodeStatus.getNewSuccessor();
+            int joinedSuccessor = this.nodeStatus.getJoinedSuccessor();
             Socket notifyingSocket = new Socket(InetAddress.getByName("127.0.0.1"), this.PORT_OFFSET + clientID);
             DataOutputStream out = new DataOutputStream(notifyingSocket.getOutputStream());
 
-            String changeOfSuccessorMsg = "NOTIFY/CHANGE_OF_SUCCESSOR:" + newSuccessor;
+            String changeOfSuccessorMsg = "NOTIFY/CHANGE_OF_SECONDARY_SUCCESSOR:" + joinedSuccessor;
             out.writeUTF(changeOfSuccessorMsg);
         } catch (IOException e) {
             System.out.println("Failed to notify predecessor Error");

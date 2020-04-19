@@ -8,15 +8,18 @@ class TCPProcessService implements Runnable {
     private ServerSocket socket;
     private int nodeID;
     private volatile List<Integer> successorNodeIDList;
+    private int PORT_OFFSET;
     private NodeStatus nodeStatus;
 
     public TCPProcessService (ServerSocket socket,
                               int nodeID,
                               List<Integer> successorNodeIDList,
+                              int PORT_OFFSET,
                               NodeStatus nodeStatus) {
         this.socket = socket;
         this.nodeID = nodeID;
         this.successorNodeIDList = successorNodeIDList;
+        this.PORT_OFFSET = PORT_OFFSET;
         this.nodeStatus = nodeStatus;
     }
 
@@ -39,8 +42,8 @@ class TCPProcessService implements Runnable {
                                                     Integer.parseInt(request.split(":")[1]),
                                                     this.nodeStatus);
                     new Thread(joinProcessService).start();
-                } else if (requestType.equals("NOTIFY/CHANGE_OF_SUCCESSOR")) {
-                    System.out.println("Changing Successors");
+                } else if (requestType.equals("NOTIFY/CHANGE_OF_SECONDARY_SUCCESSOR")) {
+                    System.out.println("Changing Secondary Successor");
 
                     int newSuccessor = Integer.parseInt(request.split(":")[1].trim());
                     successorNodeIDList.set(1, newSuccessor);
@@ -58,9 +61,46 @@ class TCPProcessService implements Runnable {
                     if (deadNodeID == this.successorNodeIDList.get(0)) {
                         this.successorNodeIDList.set(0, newFirstSuccessorID);
                         this.successorNodeIDList.set(1, newSecondSuccessorID);
+                        System.out.println("New Primary Successor: " + newFirstSuccessorID);
+                        System.out.println("New Secondary Successor: " + newSecondSuccessorID);
                     } else if (deadNodeID == this.successorNodeIDList.get(1)){
+                        System.out.println("New Secondary Successor: " + newFirstSuccessorID);
                         this.successorNodeIDList.set(1, newFirstSuccessorID);
                     }
+                } else if (requestType.equals("REQUEST/SUCCESSORS")) {
+                    System.out.println("Successor requested");
+                    while (this.nodeStatus.isSuccessorsChanging()) {
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    this.nodeStatus.setSuccessorsChanging(false);
+                    try {
+                        int clientID = Integer.parseInt(request.split(":")[1].trim());
+
+                        Socket responseSocket = new Socket(InetAddress.getByName("127.0.0.1"), this.PORT_OFFSET + clientID);
+                        DataOutputStream out = new DataOutputStream(responseSocket.getOutputStream());
+
+                        String response = "RESPONSE/SUCCESSORS:"
+                                        + this.successorNodeIDList.get(0) + ":"
+                                        + this.successorNodeIDList.get(1);
+                        out.writeUTF(response);
+                        System.out.println("Sent: " + response);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } else if (requestType.equals("RESPONSE/SUCCESSORS")) {
+                    System.out.println("Successor received");
+                    int firstID = Integer.parseInt(request.split(":")[1].trim());
+                    int secondID = Integer.parseInt(request.split(":")[2].trim());
+                    if (firstID == successorNodeIDList.get(1)) {
+                        this.nodeStatus.setSecondarySuccessor(secondID);
+                    } else {
+                        this.nodeStatus.setSecondarySuccessor(firstID);
+                    }
+                    this.nodeStatus.setSecondarySuccessorReceived(true);
                 }
 
             } catch (IOException e) {
