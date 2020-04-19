@@ -64,18 +64,18 @@ class PingRequestService implements Callable<Integer> {
             }
             if(this.nodeStatus.isNodeStayAlive()) Thread.sleep(PING_INTERVAL);
             if(!circuitAlive) {
-                this.nodeStatus.setSuccessorsChanging(true);
+                //this.nodeStatus.setSuccessorsChanging(true);
                 if (offlineTargetID == this.targetIDList.get(0)) {
-                    this.resetPrimarySuccessor(targetIDList.get(1));
+                    this.resetPrimarySuccessor(targetIDList.get(1), true);
                 } else {
-                    this.resetPrimarySuccessor(targetIDList.get(0));
+                    this.resetPrimarySuccessor(targetIDList.get(0), false);
                 }
             }
             circuitAlive = true;
         }
         return offlineTargetID;
     }
-    private synchronized void resetPrimarySuccessor (int clientID) {
+    private synchronized void resetPrimarySuccessor (int clientID, boolean isFirstDead) {
         try {
             Socket requestSocket = new Socket(InetAddress.getByName("127.0.0.1"), this.PORT_OFFSET + clientID);
             DataOutputStream out = new DataOutputStream(requestSocket.getOutputStream());
@@ -94,8 +94,12 @@ class PingRequestService implements Callable<Integer> {
                 }
             }
             this.nodeStatus.setSecondarySuccessorReceived(false);
-            this.targetIDList.set(0, this.targetIDList.get(1));
-            this.targetIDList.set(1, this.nodeStatus.getSecondarySuccessor());
+            if (isFirstDead) {
+                this.targetIDList.set(0, this.targetIDList.get(1));
+                this.targetIDList.set(1, this.nodeStatus.getSecondarySuccessor());
+            } else {
+                this.targetIDList.set(1, this.nodeStatus.getSecondarySuccessor());
+            }
         } catch (IOException e) {
             System.out.println("Failed to notify predecessor Error");
             e.printStackTrace();

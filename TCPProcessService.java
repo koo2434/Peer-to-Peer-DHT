@@ -69,14 +69,14 @@ class TCPProcessService implements Runnable {
                     }
                 } else if (requestType.equals("REQUEST/SUCCESSORS")) {
                     System.out.println("Successor requested");
-                    while (this.nodeStatus.isSuccessorsChanging()) {
+                    /*while (this.nodeStatus.isSuccessorsChanging()) {
                         try {
-                            Thread.sleep(1000);
+                            Thread.sleep(500);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
                     }
-                    this.nodeStatus.setSuccessorsChanging(false);
+                    this.nodeStatus.setSuccessorsChanging(false);*/
                     try {
                         int clientID = Integer.parseInt(request.split(":")[1].trim());
 
