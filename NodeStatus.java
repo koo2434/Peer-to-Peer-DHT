@@ -16,6 +16,9 @@ class NodeStatus {
 
     private volatile boolean successorsChanging;
 
+    private boolean fileRequested;
+    private int requestedFile;
+
     private volatile boolean nodeStayAlive;
     private volatile boolean quitComplete;
 
@@ -27,6 +30,8 @@ class NodeStatus {
         this.secondarySuccessorReceived = false;
         this.secondarySuccessor = -1;
         this.successorsChanging = false;
+        this.fileRequested = false;
+        this.requestedFile = -1;
 
         this.nodeStayAlive = true;
         this.quitComplete = false;
@@ -134,6 +139,20 @@ class NodeStatus {
     public void setSuccessorsChanging(boolean successorsChanging) {
         this.successorsChanging = successorsChanging;
     }
+
+    public boolean isFileRequested() {
+        return this.fileRequested;
+    }
+    public void setFileRequested(boolean fileRequested) {
+        this.fileRequested = fileRequested;
+    }
+    public int getRequestedFile() {
+        return this.requestedFile;
+    }
+    public void setRequestedFile(int requestedFile) {
+        this.requestedFile = requestedFile;
+    }
+
     public boolean isNodeStayAlive() {
         return this.nodeStayAlive;
     }

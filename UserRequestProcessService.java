@@ -32,17 +32,24 @@ public class UserRequestProcessService implements Runnable {
                 } else if (parsedInput[0].equals("Store")) {
                     try {
                         int requestedFile = Integer.parseInt(parsedInput[1]);
-                        File file = new File("./");
-                        FilenameFilter filter = new FilenameFilter() {
-                            public boolean accept (File file, String fileName) {
-                                return fileName.startsWith(requestedFile + "");
-                            }
-                        };
-                        String[] foundFiles = file.list(filter);
-                        if (foundFiles != null && foundFiles.length > 0) {
-                            this.fileProcessor.insertFile(requestedFile);
+                        boolean hasFileInDirectory = this.fileProcessor.hasFileInDirectory(requestedFile);
+                        if (hasFileInDirectory) {
+                            this.fileProcessor.insertFile(requestedFile, false);
                         } else {
                             System.out.println("Such file does not exist in the given directory.");
+                        }
+                    } catch (Exception e) {
+                        System.out.println("ERROR: Wrong command format");
+                        System.out.println(":: @param Store <FILE_NAME_NUMBER>");
+                    }
+                } else if (parsedInput[0].equals("Request")) {
+                    try {
+                        int requestedFile = Integer.parseInt(parsedInput[1]);
+                        boolean hasFile = this.fileProcessor.hasFile(requestedFile);
+                        if (!hasFile) {
+                            this.fileProcessor.requestFile(requestedFile, this.nodeID);
+                        } else {
+                            System.out.println("This node already holds this file.");
                         }
                     } catch (NumberFormatException e) {
                         System.out.println("ERROR: Wrong command format");

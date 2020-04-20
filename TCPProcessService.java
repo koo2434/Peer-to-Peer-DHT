@@ -1,6 +1,7 @@
 
 import java.io.*;
 import java.net.*;
+import java.nio.file.*;
 import java.util.*;
 
 class TCPProcessService implements Runnable {
@@ -34,10 +35,9 @@ class TCPProcessService implements Runnable {
                 DataInputStream in = new DataInputStream(clientSocket.getInputStream());
 
                 String request = in.readUTF();
-                System.out.println("TCP : " + request);
                 String requestType = request.split(":")[0].trim();
 
-                if (requestType.equals("REQUEST/JOIN")) {
+                if (requestType.contains("REQUEST/JOIN")) {
                     System.out.println("Processing JOIN");
                     JoinProcessService joinProcessService = new JoinProcessService(
                                                     clientSocket, this.nodeID,
@@ -45,13 +45,13 @@ class TCPProcessService implements Runnable {
                                                     Integer.parseInt(request.split(":")[1]),
                                                     this.nodeStatus);
                     new Thread(joinProcessService).start();
-                } else if (requestType.equals("NOTIFY/CHANGE_OF_SECONDARY_SUCCESSOR")) {
+                } else if (requestType.contains("NOTIFY/CHANGE_OF_SECONDARY_SUCCESSOR")) {
                     System.out.println("Changing Secondary Successor");
 
                     int newSuccessor = Integer.parseInt(request.split(":")[1].trim());
                     successorNodeIDList.set(1, newSuccessor);
                     this.nodeStatus.setNewOutPingCount(successorNodeIDList);
-                } else if (requestType.equals("NOTIFY/NODE_DEAD")) {
+                } else if (requestType.contains("NOTIFY/NODE_DEAD")) {
                     //TODO: Process dead node notification from successor
                     String[] requestArr = request.split(":");
                     int deadNodeID = Integer.parseInt(requestArr[1]);
@@ -70,7 +70,7 @@ class TCPProcessService implements Runnable {
                         System.out.println("New Secondary Successor: " + newFirstSuccessorID);
                         this.successorNodeIDList.set(1, newFirstSuccessorID);
                     }
-                } else if (requestType.equals("REQUEST/SUCCESSORS")) {
+                } else if (requestType.contains("REQUEST/SUCCESSORS")) {
                     System.out.println("Successor requested");
                     try {
                         int clientID = Integer.parseInt(request.split(":")[1].trim());
@@ -86,7 +86,7 @@ class TCPProcessService implements Runnable {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                } else if (requestType.equals("RESPONSE/SUCCESSORS")) {
+                } else if (requestType.contains("RESPONSE/SUCCESSORS")) {
                     System.out.println("Successor received");
                     int firstID = Integer.parseInt(request.split(":")[1].trim());
                     int secondID = Integer.parseInt(request.split(":")[2].trim());
@@ -96,12 +96,39 @@ class TCPProcessService implements Runnable {
                         this.nodeStatus.setSecondarySuccessor(firstID);
                     }
                     this.nodeStatus.setSecondarySuccessorReceived(true);
-                } else if (requestType.equals("DATA/INSERTION")) {
+                } else if (requestType.contains("REQUEST/DATA_INSERTION")) {
                     int requestedFile = Integer.parseInt(request.split(":")[1].trim());
-                    this.fileProcessor.insertFile(requestedFile);
+                    boolean forcedAdd = request.split(":")[2].trim().equals("TRUE");
+                    this.fileProcessor.insertFile(requestedFile, forcedAdd);
+                } else if (requestType.contains("REQUEST/DATA_REQUEST")) {
+                    int requestedFile = Integer.parseInt(request.split(":")[1].trim());
+                    int clientID = Integer.parseInt(request.split(":")[2].trim());
+                    if (clientID == this.nodeID) {
+                        System.out.println("The requested file does not exist in the network.");
+                    } else if (this.fileProcessor.hasFile(requestedFile)) {
+                        System.out.println("File " + requestedFile + " stored here");
+                        System.out.println("Sending file " + requestedFile + " to Peer " + clientID);
+                        boolean sent = this.fileProcessor.sendFile(requestedFile, clientID);
+                        if (sent) {
+                            System.out.println("The file has been sent");
+                        } else {
+                            System.out.println("The file was not sent due to an error.");
+                        }
+                    } else {
+                        System.out.println("Request for File " + requestedFile + " has been received, but the file is not stored here");
+                        this.fileProcessor.requestFile(requestedFile, clientID);
+                    }
+                } else if (requestType.equals("NOTIFY/DATA_INCOMING")) {
+                    String fileName = request.split(":")[1].trim();
+                    System.out.println("File received: " + fileName);
+                    String fileDir = "./Files/received_" + fileName;
+                    File temp = new File(fileDir);
+                    if (temp.exists()) {
+                        temp.delete();
+                    }
+                    Files.copy(in, Paths.get("./Files/received_" + fileName));
                 }
-
-            } catch (IOException e) {
+            }  catch (IOException e) {
                 e.printStackTrace();
             }
         }
