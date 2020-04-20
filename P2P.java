@@ -26,9 +26,9 @@ public class P2P {
         }
 
         try {
-
             String type = args[0].trim().toLowerCase();
             int nodeID = Integer.parseInt(args[1]);
+            //1. "init" process
             if (type.equals("init")) {
                 int firstSuccessorNodeID = Integer.parseInt(args[2]);
                 int secondSuccessorNodeID = Integer.parseInt(args[3]);
@@ -43,6 +43,7 @@ public class P2P {
                 System.out.println("Node #" + nodeID + " starting...");
                 nodeInitService.begin();
 
+            //2. "join" process
             } else if (type.equals("join")) {
                 int knownPeerID = Integer.parseInt(args[2]);
                 int pingInterval = Integer.parseInt(args[3]) * 1000;
@@ -58,15 +59,14 @@ public class P2P {
                                         PORT_OFFSET);
                 System.out.println("Node #" + nodeID + " starting...");
                 nodeInitService.begin();
+            //3. Error; Unknown operation;
             } else {
                 printInstruction();
-                System.out.println("Error");
                 return;
             }
 
         } catch (IllegalArgumentException e) {
             printInstruction();
-            System.out.println("Error");
             return;
         } catch (Exception e) {
             e.printStackTrace();

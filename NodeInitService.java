@@ -31,7 +31,7 @@ class NodeInitService {
 
         //Shared NodeStatus instance for node and network status management.
         this.nodeStatus = new NodeStatus(nodeID, this.successorNodeIDList);
-        //Shared FileProcessor; just for encapsulation
+        //Shared FileProcessor; processes file operation
         this.fileProcessor = new FileProcessor(nodeID, this.successorNodeIDList,
                                                 PORT_OFFSET, this.nodeStatus);
 
@@ -54,7 +54,6 @@ class NodeInitService {
             this.PORT_OFFSET,
             this.nodeStatus
         );
-
         TCPProcessService tcpProcessService = new TCPProcessService(
             this.tcpSocket, this.nodeID, this.successorNodeIDList,
             this.PORT_OFFSET,
@@ -68,16 +67,14 @@ class NodeInitService {
         );
 
         p2pService.execute(pingProcessService);
-        Future<Integer> pingFailedFuture = p2pService.submit(pingRequestService);
+        Future<Integer> nodeDead = p2pService.submit(pingRequestService);
         p2pService.execute(tcpProcessService);
         p2pService.execute(userRequestProcessService);
 
-        int lostTargetID = pingFailedFuture.get();
-        System.out.println("LOST: " + lostTargetID);
+        int finishFlag = nodeDead.get();
         p2pService.shutdown();
-        System.out.println("Quit complete.");
+        System.out.println("Quit complete. Press Ctrl + C to finish.");
         return;
-
     }
 
 }

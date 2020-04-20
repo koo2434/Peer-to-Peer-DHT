@@ -73,7 +73,7 @@ class PingRequestService implements Callable<Integer> {
             }
             circuitAlive = true;
         }
-        return offlineTargetID;
+        return 0;
     }
     private synchronized void resetPrimarySuccessor (int clientID, boolean isFirstDead) {
         try {

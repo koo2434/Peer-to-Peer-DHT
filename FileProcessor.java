@@ -56,7 +56,11 @@ class FileProcessor {
                 }
             } else {
                 if (hash < this.nodeID) {
-                    requestMsg = "REQUEST/DATA_INSERTION:"+fileName+":FALSE";
+                    if (successorID < this.nodeID) {
+                        requestMsg = "REQUEST/DATA_INSERTION:"+fileName+":TRUE";
+                    } else {
+                        requestMsg = "REQUEST/DATA_INSERTION:"+fileName+":FALSE";
+                    }
                 } else if (hash > this.nodeID){
                     if (hash < successorID) {
                         requestMsg = "REQUEST/DATA_INSERTION:"+fileName+":TRUE";
