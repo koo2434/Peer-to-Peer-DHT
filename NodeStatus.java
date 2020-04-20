@@ -5,6 +5,7 @@ import java.util.*;
  */
 class NodeStatus {
 
+    private volatile Set<Integer> storedFiles;
     private volatile Map<Integer, Integer> outPingCount;
 
     private volatile boolean notifyJoinedSuccessor;
@@ -19,6 +20,7 @@ class NodeStatus {
     private volatile boolean quitComplete;
 
     public NodeStatus(int nodeID, List<Integer> successorIDList) {
+        this.storedFiles = new HashSet<>();
         this.outPingCount = new HashMap<>();
         this.notifyJoinedSuccessor = false;
         this.joinedSuccessor = -1;
@@ -28,6 +30,21 @@ class NodeStatus {
 
         this.nodeStayAlive = true;
         this.quitComplete = false;
+    }
+
+    public boolean putNewFile(int fileName) {
+        if (!this.storedFiles.contains(fileName)) {
+            this.storedFiles.add(fileName);
+            return true;
+        } else {
+            return false;
+        }
+    }
+    public boolean hasFile(int fileName) {
+        return this.storedFiles.contains(fileName);
+    }
+    public Set<Integer> getAllStoredFiles() {
+        return this.storedFiles;
     }
 
     /**

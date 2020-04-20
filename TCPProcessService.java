@@ -10,17 +10,20 @@ class TCPProcessService implements Runnable {
     private volatile List<Integer> successorNodeIDList;
     private int PORT_OFFSET;
     private NodeStatus nodeStatus;
+    private FileProcessor fileProcessor;
 
     public TCPProcessService (ServerSocket socket,
                               int nodeID,
                               List<Integer> successorNodeIDList,
                               int PORT_OFFSET,
-                              NodeStatus nodeStatus) {
+                              NodeStatus nodeStatus,
+                              FileProcessor fileProcessor) {
         this.socket = socket;
         this.nodeID = nodeID;
         this.successorNodeIDList = successorNodeIDList;
         this.PORT_OFFSET = PORT_OFFSET;
         this.nodeStatus = nodeStatus;
+        this.fileProcessor = fileProcessor;
     }
 
     @Override
@@ -69,14 +72,6 @@ class TCPProcessService implements Runnable {
                     }
                 } else if (requestType.equals("REQUEST/SUCCESSORS")) {
                     System.out.println("Successor requested");
-                    /*while (this.nodeStatus.isSuccessorsChanging()) {
-                        try {
-                            Thread.sleep(500);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    this.nodeStatus.setSuccessorsChanging(false);*/
                     try {
                         int clientID = Integer.parseInt(request.split(":")[1].trim());
 
@@ -101,6 +96,9 @@ class TCPProcessService implements Runnable {
                         this.nodeStatus.setSecondarySuccessor(firstID);
                     }
                     this.nodeStatus.setSecondarySuccessorReceived(true);
+                } else if (requestType.equals("DATA/INSERTION")) {
+                    int requestedFile = Integer.parseInt(request.split(":")[1].trim());
+                    this.fileProcessor.insertFile(requestedFile);
                 }
 
             } catch (IOException e) {

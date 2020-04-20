@@ -14,6 +14,7 @@ class NodeInitService {
     private final int PORT_OFFSET;
 
     private NodeStatus nodeStatus;
+    private FileProcessor fileProcessor;
 
     private DatagramSocket udpSocket;
     private ServerSocket tcpSocket;
@@ -30,6 +31,9 @@ class NodeInitService {
 
         //Shared NodeStatus instance for node and network status management.
         this.nodeStatus = new NodeStatus(nodeID, this.successorNodeIDList);
+        //Shared FileProcessor; just for encapsulation
+        this.fileProcessor = new FileProcessor(nodeID, this.successorNodeIDList,
+                                                PORT_OFFSET, this.nodeStatus);
 
         InetAddress addr = InetAddress.getByName("127.0.0.1");
         int port = PORT_OFFSET + nodeID;
@@ -54,10 +58,13 @@ class NodeInitService {
         TCPProcessService tcpProcessService = new TCPProcessService(
             this.tcpSocket, this.nodeID, this.successorNodeIDList,
             this.PORT_OFFSET,
-            this.nodeStatus
+            this.nodeStatus,
+            this.fileProcessor
         );
         UserRequestProcessService userRequestProcessService = new UserRequestProcessService(
-            this.nodeStatus
+            this.nodeID,
+             this.nodeStatus,
+             this.fileProcessor
         );
 
         p2pService.execute(pingProcessService);
