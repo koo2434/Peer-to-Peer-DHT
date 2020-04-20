@@ -60,6 +60,13 @@ class FileProcessor {
                 } else if (hash > this.nodeID){
                     if (hash < successorID) {
                         requestMsg = "REQUEST/DATA_INSERTION:"+fileName+":TRUE";
+                    } else if (successorID < this.nodeID) {
+                        boolean isDup = !this.nodeStatus.putNewFile(fileName);
+                        if (isDup) {
+                            System.out.println("This node already holds file " + fileName);
+                        } else {
+                            System.out.println("Store " + fileName + " request accepted");
+                        }
                     } else {
                         requestMsg = "REQUEST/DATA_INSERTION:"+fileName+":FALSE";
                     }
@@ -92,8 +99,12 @@ class FileProcessor {
     public boolean sendFile(int fileName, int clientID) {
         try{
             if (!hasFile(fileName)) return false;
+            Socket socket = new Socket(InetAddress.getByName("127.0.0.1"),
+                                this.PORT_OFFSET + clientID);
+            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+
             String fileDir = "./Files/";
-            String fileFullName = "";
+            String fileFullName;
             String[] foundFiles = new File(fileDir).list();
             for (String f : foundFiles) {
                 if (f.split("\\.")[0].equals(fileName + "")) {
@@ -102,13 +113,21 @@ class FileProcessor {
                     break;
                 }
             }
+
             File fileToSend = new File(fileDir);
-            Socket socket = new Socket(InetAddress.getByName("127.0.0.1"),
-                                this.PORT_OFFSET + clientID);
-            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
             String fileTransferMsg = "NOTIFY/DATA_INCOMING:" + fileFullName;
+            long length = fileToSend.length();
+            byte[] bytes = new byte[4096];
+            InputStream in = new FileInputStream(fileToSend);
+
             out.writeUTF(fileTransferMsg);
-            Files.copy(fileToSend.toPath(), out);
+            int count;
+            while((count = in.read(bytes)) > 0) {
+                out.write(bytes, 0, count);
+            }
+            out.close();
+            in.close();
+            socket.close();
             return true;
         } catch (Exception e) {
             e.printStackTrace();

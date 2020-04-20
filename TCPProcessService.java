@@ -36,6 +36,7 @@ class TCPProcessService implements Runnable {
 
                 String request = in.readUTF();
                 String requestType = request.split(":")[0].trim();
+                System.out.println(request);
 
                 if (requestType.contains("REQUEST/JOIN")) {
                     System.out.println("Processing JOIN");
@@ -120,13 +121,19 @@ class TCPProcessService implements Runnable {
                     }
                 } else if (requestType.equals("NOTIFY/DATA_INCOMING")) {
                     String fileName = request.split(":")[1].trim();
-                    System.out.println("File received: " + fileName);
                     String fileDir = "./Files/received_" + fileName;
                     File temp = new File(fileDir);
                     if (temp.exists()) {
                         temp.delete();
                     }
-                    Files.copy(in, Paths.get("./Files/received_" + fileName));
+                    byte[] bytes = new byte[4096];
+                    OutputStream fileOut = new FileOutputStream(fileDir);
+                    int count;
+                    while((count = in.read(bytes)) > 0) {
+                        fileOut.write(bytes, 0, count);
+                    }
+                    fileOut.close();
+                    System.out.println("File received: " + fileName);
                 }
             }  catch (IOException e) {
                 e.printStackTrace();
