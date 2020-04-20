@@ -104,7 +104,7 @@ class FileProcessor {
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 
             String fileDir = "./Files/";
-            String fileFullName;
+            String fileFullName = "";
             String[] foundFiles = new File(fileDir).list();
             for (String f : foundFiles) {
                 if (f.split("\\.")[0].equals(fileName + "")) {
