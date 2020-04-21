@@ -40,10 +40,12 @@ class JoinProcessService implements Runnable {
             String r2 = "RESPONSE/JOIN:DELEGATE:" + firstSuccessorNodeID;
 
             if (this.clientNodeID < this.nodeID) {
+                System.out.println("Peer " + this.clientNodeID + " join request forwarded to successor");
                 out.writeUTF(r2);
             } else if (this.clientNodeID > this.nodeID) {
                 if (this.clientNodeID < firstSuccessorNodeID
                     || this.nodeID > firstSuccessorNodeID) {
+                        System.out.println("Peer " + this.clientNodeID + " join request accepted");
                         out.writeUTF(r1);
                         //Alert its predecessor
                         this.nodeStatus.setJoinedSuccessor(clientNodeID);
@@ -52,6 +54,8 @@ class JoinProcessService implements Runnable {
                         successorNodeIDList.set(1, successorNodeIDList.get(0));
                         successorNodeIDList.set(0, this.clientNodeID);
                         this.nodeStatus.setNewOutPingCount (successorNodeIDList);
+                        System.out.println("Primary Successor: " + successorNodeIDList.get(0));
+                        System.out.println("Secondary Successor: " + successorNodeIDList.get(1));
                 } else if (this.nodeID < firstSuccessorNodeID) {
                     out.writeUTF(r2);
                 } else {

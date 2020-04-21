@@ -62,7 +62,7 @@ class PingRequestService implements Callable<Integer> {
                     if (this.nodeStatus.getOutPingCount(targetID) >= 3) {
                         circuitAlive = false;
                         offlineTargetID = targetID;
-                        System.out.println("Offline found: " + offlineTargetID);
+                        System.out.println("Offline found: Peer " + offlineTargetID);
                     }
                 }
             } catch (IOException e) {
@@ -96,7 +96,6 @@ class PingRequestService implements Callable<Integer> {
 
             String requestSuccessorMsg = "REQUEST/SUCCESSORS:" + this.nodeID;
             out.writeUTF(requestSuccessorMsg);
-            System.out.println("Request sent to " + clientID);
 
             while (!this.nodeStatus.isSecondarySuccessorReceived()) {
                 try {
@@ -113,6 +112,8 @@ class PingRequestService implements Callable<Integer> {
             } else {
                 this.targetIDList.set(1, this.nodeStatus.getSecondarySuccessor());
             }
+            System.out.println("Primary Successor: " + this.targetIDList.get(0));
+            System.out.println("Secondary Successor: " + this.targetIDList.get(1));
         } catch (IOException e) {
             System.out.println("Failed to notify predecessor Error");
             e.printStackTrace();

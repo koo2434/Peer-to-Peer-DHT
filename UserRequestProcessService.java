@@ -34,7 +34,7 @@ public class UserRequestProcessService implements Runnable {
                 //1. Quit:
                 if (parsedInput[0].equals("Quit")) {
                     this.nodeStatus.setNodeStayAlive(false);
-                    System.out.println("Qutting DHT Process...");
+                    System.out.println("Qutting P2P Process...");
 
                 //2. Store <FILE_NAME>:
                 } else if (parsedInput[0].equals("Store")) {

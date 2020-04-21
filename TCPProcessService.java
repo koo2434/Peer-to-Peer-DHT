@@ -52,10 +52,14 @@ class TCPProcessService implements Runnable {
                     new Thread(joinProcessService).start();
                 //2. New node has joined, change successor notification
                 } else if (requestType.contains("NOTIFY/CHANGE_OF_SECONDARY_SUCCESSOR")) {
-                    System.out.println("Changing Secondary Successor");
+                    System.out.println("Changing Secondary Successor due to Join");
 
                     int newSuccessor = Integer.parseInt(request.split(":")[1].trim());
                     successorNodeIDList.set(1, newSuccessor);
+
+                    System.out.println("Primary Successor: " + successorNodeIDList.get(0));
+                    System.out.println("Secondary Successor: " + successorNodeIDList.get(1));
+
                     this.nodeStatus.setNewOutPingCount(successorNodeIDList);
                 //3. One of the successors is dead notification
                 } else if (requestType.contains("NOTIFY/NODE_DEAD")) {
@@ -65,6 +69,7 @@ class TCPProcessService implements Runnable {
                     int newFirstSuccessorID = Integer.parseInt(requestArr[2]);
                     int newSecondSuccessorID = Integer.parseInt(requestArr[3]);
                     System.out.println("Node dead: " + deadNodeID);
+                    System.out.println("Peer " + deadNodeID + " will depart from the network");
 
                     // If the dead node is the immediate successor
                     if (deadNodeID == this.successorNodeIDList.get(0)) {
@@ -131,7 +136,8 @@ class TCPProcessService implements Runnable {
                     }
                 //8. Incoming file data notification
                 } else if (requestType.equals("NOTIFY/DATA_INCOMING")) {
-                    String fileName = request.split(":")[1].trim();
+                    int clientID = Integer.parseInt(request.split(":")[1].trim());
+                    String fileName = request.split(":")[2].trim();
                     String fileDir = "./Files/received_" + fileName;
                     File temp = new File(fileDir);
                     if (temp.exists()) {
@@ -144,6 +150,7 @@ class TCPProcessService implements Runnable {
                         fileOut.write(bytes, 0, count);
                     }
                     fileOut.close();
+                    System.out.println("File from Peer " + clientID);
                     System.out.println("File received: " + fileName);
                 }
             }  catch (IOException e) {

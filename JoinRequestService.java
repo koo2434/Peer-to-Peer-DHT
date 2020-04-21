@@ -60,6 +60,9 @@ class JoinRequestService {
                         int firstSuccessorNodeID = Integer.parseInt(response.split(":")[2]);
                         int secondSuccessorNodeID = Integer.parseInt(response.split(":")[3]);
 
+                        System.out.println("Primary Successor: " + firstSuccessorNodeID);
+                        System.out.println("Secondary Successor: " + secondSuccessorNodeID);
+
                         out.close();
                         in.close();
                         this.socket.close();

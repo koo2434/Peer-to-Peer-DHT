@@ -100,6 +100,7 @@ class FileProcessor {
                         } else {
                             System.out.println("Store " + fileName + " request accepted");
                         }
+                        return;
                     } else {
                         requestMsg = "REQUEST/DATA_INSERTION:"+fileName+":FALSE";
                     }
@@ -130,7 +131,7 @@ class FileProcessor {
                                 this.PORT_OFFSET + successorID);
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
             out.writeUTF(requestMsg);
-            System.out.println("File request for " + fileName + " has been sent to my successor");
+            System.out.println("File request for " + fileName + " has been forwarded to my successor");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -160,12 +161,12 @@ class FileProcessor {
 
             File fileToSend = new File(fileDir);
             //1. Notify the recipient that the file will be sent
-            String fileTransferMsg = "NOTIFY/DATA_INCOMING:" + fileFullName;
+            String fileTransferMsg = "NOTIFY/DATA_INCOMING:"+ this.nodeID + ":" + fileFullName;
             long length = fileToSend.length();
             byte[] bytes = new byte[4096];
             InputStream in = new FileInputStream(fileToSend);
             out.writeUTF(fileTransferMsg);
-            
+
             //2. Send the file
             int count;
             while((count = in.read(bytes)) > 0) {
