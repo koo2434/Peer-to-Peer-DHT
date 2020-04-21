@@ -5,9 +5,9 @@ Version: JAVA SDK 11
 ## Instruction
 
 On initial startup:\
-@param: \<TYPE> \<ID> <FIRST_SUCCESSOR> <SECOND_SUCCESSOR> <PING_INTERVAL>\
+@param: java P2P \<TYPE> \<ID> <FIRST_SUCCESSOR> <SECOND_SUCCESSOR> <PING_INTERVAL>\
 Joining existing network:\
-@param: \<TYPE> \<ID> <KNOWN_PEER> <PING_INTERVAL>
+@param: java P2P \<TYPE> \<ID> <KNOWN_PEER> <PING_INTERVAL>
 \
 \
      TYPE:  'init' for inital startup, 'join' to join an existing network\
