@@ -20,7 +20,7 @@ Joining existing network:\
 Refer to 'init.sh' file to use script to activate multiple nodes at once.
 \
 \
-During Execution:\
+During Execution:
 * Quit
 * Store <FILE_NAME>
 * Request <FILE_NAME>
