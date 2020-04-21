@@ -4,6 +4,10 @@ import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
 
+/**
+* PingRequestService processes outgoing ping requests to its successors
+* every PING_INTERVAL seconds.
+*/
 class PingRequestService implements Callable<Integer> {
 
     private int nodeID;
@@ -53,6 +57,8 @@ class PingRequestService implements Callable<Integer> {
                     this.nodeStatus.incrementOutPingCount(targetID);
                     System.out.println("Ping request sent to Peer " + targetID);
 
+                    //If the ping requests made to this successor node
+                    // has gone over the threshold of 3:
                     if (this.nodeStatus.getOutPingCount(targetID) >= 3) {
                         circuitAlive = false;
                         offlineTargetID = targetID;
@@ -63,10 +69,12 @@ class PingRequestService implements Callable<Integer> {
                 e.printStackTrace();
             }
             if(this.nodeStatus.isNodeStayAlive()) Thread.sleep(PING_INTERVAL);
+            //If a dead successor is found:
             if(!circuitAlive) {
-                //this.nodeStatus.setSuccessorsChanging(true);
+                //If the dead successor is the primary successor:
                 if (offlineTargetID == this.targetIDList.get(0)) {
                     this.resetPrimarySuccessor(targetIDList.get(1), true);
+                //If the dead successor is the secondary successor:
                 } else {
                     this.resetPrimarySuccessor(targetIDList.get(0), false);
                 }
@@ -75,6 +83,11 @@ class PingRequestService implements Callable<Integer> {
         }
         return 0;
     }
+    /**
+     * Request for new successor info to the successor that is not dead.
+     * @param clientID ID number of the successor to which we make the request
+     * @param isFirstDead if the dead successor is the primary successor or not
+     */
     private synchronized void resetPrimarySuccessor (int clientID, boolean isFirstDead) {
         try {
             Socket requestSocket = new Socket(InetAddress.getByName("127.0.0.1"), this.PORT_OFFSET + clientID);

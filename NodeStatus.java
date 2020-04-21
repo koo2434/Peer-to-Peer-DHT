@@ -1,7 +1,7 @@
 
 import java.util.*;
 /**
- * Data class to indicate node and network status.
+ * NodeStatus is a Data class to indicate node and network status.
  */
 class NodeStatus {
 
@@ -37,6 +37,11 @@ class NodeStatus {
         this.quitComplete = false;
     }
 
+    /**
+     * Put a received fileName into storedFiles set if it is no duplicate.
+     * @param fileName four-digit name of the file to be stored.
+     * @return if the file has successfully been stored.
+     */
     public boolean putNewFile(int fileName) {
         if (!this.storedFiles.contains(fileName)) {
             this.storedFiles.add(fileName);
@@ -45,9 +50,18 @@ class NodeStatus {
             return false;
         }
     }
+    /**
+     * If this node holds the requested file.
+     * @param fileName four-digit name of the requested file.
+     * @return if this node holds the requested file.
+     */
     public boolean hasFile(int fileName) {
         return this.storedFiles.contains(fileName);
     }
+    /**
+     * Getter of all stored file names.
+     * @return set of all stored file names.
+     */
     public Set<Integer> getAllStoredFiles() {
         return this.storedFiles;
     }
@@ -78,6 +92,12 @@ class NodeStatus {
             this.outPingCount.put(id, 1);
         }
     }
+    /**
+     * Setter of ping count, value of outPingCount. Sets the value of the
+     * given @param id as the key to the given @param ct.
+     * @param id successorID to which the ping was sent to.
+     * @param ct count of pings sent
+     */
     public synchronized void setOutPingCount (int id, int ct) {
         if (this.outPingCount.containsKey(id)) {
             this.outPingCount.put(id, ct);
@@ -108,6 +128,9 @@ class NodeStatus {
         return oldIDs;
     }
 
+    /**
+     * Getter and setters below, that are self-explanatory
+     */
     public void setJoinedSuccessor(int clientNodeID) {
         this.notifyJoinedSuccessor = true;
         this.joinedSuccessor = clientNodeID;

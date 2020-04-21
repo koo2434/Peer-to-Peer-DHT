@@ -4,6 +4,9 @@ import java.net.*;
 import java.nio.file.*;
 import java.util.*;
 
+/**
+ * TCPProcessService processes any incoming TCP messages.
+ */
 class TCPProcessService implements Runnable {
 
     private ServerSocket socket;
@@ -38,6 +41,7 @@ class TCPProcessService implements Runnable {
                 String requestType = request.split(":")[0].trim();
                 System.out.println(request);
 
+                //1. Join Request
                 if (requestType.contains("REQUEST/JOIN")) {
                     System.out.println("Processing JOIN");
                     JoinProcessService joinProcessService = new JoinProcessService(
@@ -46,12 +50,14 @@ class TCPProcessService implements Runnable {
                                                     Integer.parseInt(request.split(":")[1]),
                                                     this.nodeStatus);
                     new Thread(joinProcessService).start();
+                //2. New node has joined, change successor notification
                 } else if (requestType.contains("NOTIFY/CHANGE_OF_SECONDARY_SUCCESSOR")) {
                     System.out.println("Changing Secondary Successor");
 
                     int newSuccessor = Integer.parseInt(request.split(":")[1].trim());
                     successorNodeIDList.set(1, newSuccessor);
                     this.nodeStatus.setNewOutPingCount(successorNodeIDList);
+                //3. One of the successors is dead notification
                 } else if (requestType.contains("NOTIFY/NODE_DEAD")) {
                     //TODO: Process dead node notification from successor
                     String[] requestArr = request.split(":");
@@ -60,17 +66,18 @@ class TCPProcessService implements Runnable {
                     int newSecondSuccessorID = Integer.parseInt(requestArr[3]);
                     System.out.println("Node dead: " + deadNodeID);
 
-                    //1. If the dead node is the immediate successor
-                    //2. If the dead node is the secondary successor
+                    // If the dead node is the immediate successor
                     if (deadNodeID == this.successorNodeIDList.get(0)) {
                         this.successorNodeIDList.set(0, newFirstSuccessorID);
                         this.successorNodeIDList.set(1, newSecondSuccessorID);
                         System.out.println("New Primary Successor: " + newFirstSuccessorID);
                         System.out.println("New Secondary Successor: " + newSecondSuccessorID);
+                    // If the dead node is the secondary successor
                     } else if (deadNodeID == this.successorNodeIDList.get(1)){
                         System.out.println("New Secondary Successor: " + newFirstSuccessorID);
                         this.successorNodeIDList.set(1, newFirstSuccessorID);
                     }
+                //4. Request for successor info of this node
                 } else if (requestType.contains("REQUEST/SUCCESSORS")) {
                     System.out.println("Successor requested");
                     try {
@@ -87,6 +94,7 @@ class TCPProcessService implements Runnable {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+                //5. Response to REQUEST/SUCCESSORS
                 } else if (requestType.contains("RESPONSE/SUCCESSORS")) {
                     System.out.println("Successor received");
                     int firstID = Integer.parseInt(request.split(":")[1].trim());
@@ -97,10 +105,12 @@ class TCPProcessService implements Runnable {
                         this.nodeStatus.setSecondarySuccessor(firstID);
                     }
                     this.nodeStatus.setSecondarySuccessorReceived(true);
+                //6. Store Data Request
                 } else if (requestType.contains("REQUEST/DATA_INSERTION")) {
                     int requestedFile = Integer.parseInt(request.split(":")[1].trim());
                     boolean forcedAdd = request.split(":")[2].trim().equals("TRUE");
                     this.fileProcessor.insertFile(requestedFile, forcedAdd);
+                //7. Request Data Request
                 } else if (requestType.contains("REQUEST/DATA_REQUEST")) {
                     int requestedFile = Integer.parseInt(request.split(":")[1].trim());
                     int clientID = Integer.parseInt(request.split(":")[2].trim());
@@ -119,6 +129,7 @@ class TCPProcessService implements Runnable {
                         System.out.println("Request for File " + requestedFile + " has been received, but the file is not stored here");
                         this.fileProcessor.requestFile(requestedFile, clientID);
                     }
+                //8. Incoming file data notification
                 } else if (requestType.equals("NOTIFY/DATA_INCOMING")) {
                     String fileName = request.split(":")[1].trim();
                     String fileDir = "./Files/received_" + fileName;

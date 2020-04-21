@@ -1,5 +1,14 @@
 
 import java.util.*;
+
+/**
+* P2P DHT Simulator simulates peer-to-peer operation using
+* distributed hash table (DHT)among consisting nodes in a network.
+*
+* @author  Jaemo Koo z5305053
+* @version 1.0
+* @since   21 April 2020
+*/
 public class P2P {
 
     public static final int PORT_OFFSET = 12000;

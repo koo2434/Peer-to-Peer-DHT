@@ -3,6 +3,11 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
+/**
+ * JoinRequestService process join request made by the node
+ * before it initiates.
+ */
+
 class JoinRequestService {
 
     private int nodeID;
@@ -11,7 +16,6 @@ class JoinRequestService {
     private final int PING_INTERVAL;
     private final int PORT_OFFSET;
 
-    //TCP Socket.
     private Socket socket;
 
     public JoinRequestService(int nodeID, int knownPeerID,
@@ -25,6 +29,13 @@ class JoinRequestService {
         this.socket = new Socket(receiverAddress, PORT_OFFSET + knownPeerID);
     }
 
+    /**
+     * Joins the network based on the nodeID and knownPeerID.
+     * Sends a message to the knownPeerID via TCP, which will either
+     * approve its join w/ successor info or delegate its request until it finds
+     * the appropriate node.
+     * @return two successor ID numbers.
+     */
     public List<Integer> joinNetwork() {
         try{
 

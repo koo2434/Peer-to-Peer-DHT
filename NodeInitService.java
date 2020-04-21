@@ -4,7 +4,11 @@ import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
 
-
+/**
+ * NodeInitService initalizes necessary variables and environments
+ * before initiating this node and its network.
+ *
+ */
 class NodeInitService {
 
     private int nodeID;
@@ -41,6 +45,9 @@ class NodeInitService {
         this.tcpSocket = new ServerSocket(port);
     }
 
+    /**
+     * Starts the network.
+     */
     public void begin() throws Exception {
         ExecutorService p2pService = Executors.newCachedThreadPool();
 
@@ -71,7 +78,7 @@ class NodeInitService {
         p2pService.execute(tcpProcessService);
         p2pService.execute(userRequestProcessService);
 
-        int finishFlag = nodeDead.get();
+        int finishFlag = nodeDead.get(); //This blocks this thread until this node dies.
         p2pService.shutdown();
         System.out.println("Quit complete. Press Ctrl + C to finish.");
         return;

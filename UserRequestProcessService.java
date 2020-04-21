@@ -3,6 +3,11 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
+/**
+ * UserRequestProcessService is a Runnable that processes user input
+ *  while the program runs.
+ *
+ */
 public class UserRequestProcessService implements Runnable {
 
     private Scanner sc;
@@ -26,9 +31,12 @@ public class UserRequestProcessService implements Runnable {
                 String input = sc.nextLine();
                 String[] parsedInput = input.split(" ");
 
+                //1. Quit:
                 if (parsedInput[0].equals("Quit")) {
                     this.nodeStatus.setNodeStayAlive(false);
                     System.out.println("Qutting DHT Process...");
+
+                //2. Store <FILE_NAME>:
                 } else if (parsedInput[0].equals("Store")) {
                     try {
                         int requestedFile = Integer.parseInt(parsedInput[1]);
@@ -42,11 +50,13 @@ public class UserRequestProcessService implements Runnable {
                         System.out.println("ERROR: Wrong command format");
                         System.out.println(":: @param Store <FILE_NAME_NUMBER>");
                     }
+
+                //3. Request <FILE_NAME>:
                 } else if (parsedInput[0].equals("Request")) {
                     try {
                         int requestedFile = Integer.parseInt(parsedInput[1]);
                         boolean hasFile = this.fileProcessor.hasFile(requestedFile);
-                        if (!hasFile) {
+                        if (!hasFile) { //If this node does not own this file:
                             this.fileProcessor.requestFile(requestedFile, this.nodeID);
                         } else {
                             System.out.println("This node already holds this file.");

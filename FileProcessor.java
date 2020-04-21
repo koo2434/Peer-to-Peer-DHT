@@ -4,6 +4,9 @@ import java.net.*;
 import java.nio.file.*;
 import java.util.*;
 
+/**
+ * FileProcessor provides tools to perform any file IO processes.
+ */
 class FileProcessor {
     private int nodeID;
     private NodeStatus nodeStatus;
@@ -21,6 +24,11 @@ class FileProcessor {
         this.nodeStatus = nodeStatus;
     }
 
+    /**
+     * Checks if the @param exists in the './Files' directory.
+     * @param fileName four-digit presumed file name in the directory.
+     * @return if the file exists in the './Files' directory or not.
+     */
     public boolean hasFileInDirectory(int fileName) {
         try {
             File file = new File("./Files");
@@ -38,9 +46,30 @@ class FileProcessor {
         }
         return false;
     }
+    /**
+     * Checks if this node holds the @param or not.
+     * The difference from hasFileInDirectory method is
+     * hasFileInDirectory checks if the physical file exists in the './Files',
+     * while hasFile checks if the @param is held by this node or not.
+     * @param fileName four-digit presumed file name in the directory.
+     * @return if the node holds @param or not.
+     */
     public boolean hasFile(int fileName) {
         return this.nodeStatus.hasFile(fileName);
     }
+    /**
+     * Stores the given file if this node is the appropriate node
+     * based on the nodeID and the calculated hash value,
+     * OR @param forceAdd is true
+     * OR hash value > nodeID && nodeID > successorID.
+     * If not, it forwards the Store request to is successor.
+     * If one of the following conditions are met, the Store request is forwarded
+     * with forceAdd being true.
+     *  1. Hash value < nodeID && successorID < nodeID
+     *  2. Hash value > nodeID AND hash value < successorID.
+     * @param fileName four-digit given file name.
+     * @param forceAdd given file should be stored in this node if this is true.
+     */
     public synchronized void insertFile(int fileName, boolean forcedAdd) {
         try{
             int hash = fileName % 256;
@@ -86,6 +115,12 @@ class FileProcessor {
             e.printStackTrace();
         }
     }
+    /**
+     * Requests a file from successor.
+     * @param fileName four-digit name of the requested file.
+     * @param originID the ID number of the node that made this request. Used by the node that
+     *                  holds the requested file to transfer the file.
+     */
     public synchronized void requestFile(int fileName, int originID) {
         try{
             int hash = fileName % 256;
@@ -100,6 +135,11 @@ class FileProcessor {
             e.printStackTrace();
         }
     }
+    /**
+     * Sends a file to a node.
+     * @param fileName four-digit name of the file being sent.
+     * @param clientID ID number of the node that the file is being sent to.
+     */
     public boolean sendFile(int fileName, int clientID) {
         try{
             if (!hasFile(fileName)) return false;
@@ -119,12 +159,14 @@ class FileProcessor {
             }
 
             File fileToSend = new File(fileDir);
+            //1. Notify the recipient that the file will be sent
             String fileTransferMsg = "NOTIFY/DATA_INCOMING:" + fileFullName;
             long length = fileToSend.length();
             byte[] bytes = new byte[4096];
             InputStream in = new FileInputStream(fileToSend);
-
             out.writeUTF(fileTransferMsg);
+            
+            //2. Send the file
             int count;
             while((count = in.read(bytes)) > 0) {
                 out.write(bytes, 0, count);

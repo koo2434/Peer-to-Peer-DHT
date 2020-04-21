@@ -4,6 +4,10 @@ import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
 
+/**
+ * PingProcessService processes any incoming UDP pings,
+ * along with sending necessary notifications to predecessors from which the pings were sent.
+ */
 class PingProcessService implements Runnable {
 
     private DatagramSocket socket;
@@ -41,12 +45,13 @@ class PingProcessService implements Runnable {
             String type = data[0].trim();
             int clientID = Integer.parseInt(data[1].trim());
 
+            //1. Ping request received
             if (type.equals("REQUEST/PING")) {
                 System.out.println("Ping request received from Peer " + clientID);
 
                 int successorPosition = Integer.parseInt(data[2].trim());
 
-                //If JOIN occurred and the node from which we recieved a ping
+                //If JOIN occurred and the client node from which we recieved this ping
                 //  is affected by the JOIN operation
                 //  = change of successor by immediate predecessor
                 if (this.nodeStatus.isNotifyJoinedSuccessor()
@@ -54,10 +59,11 @@ class PingProcessService implements Runnable {
                     this.nodeStatus.setNotifyJoinedSuccessor(false);
                     this.notifyJoinedSuccessor(clientID);
                 }
-                //If the node is trying to quit:
+                //If this node is trying to quit:
                 if (!this.nodeStatus.isNodeStayAlive()) {
                     this.notifyNodeDead(clientID, successorPosition);
                     deadNotifiedCount++;
+                //If not:
                 } else {
                     String pingMsg= "RESPONSE/PING:" + this.nodeID;
                     byte[] msgBytes = pingMsg.getBytes();
@@ -68,18 +74,19 @@ class PingProcessService implements Runnable {
                         e.printStackTrace();
                     }
                 }
-
+            //2. Ping Response received
             } else if (type.equals("RESPONSE/PING")) {
                 System.out.println("Ping response received from Peer " + clientID);
                 int pingCount = this.nodeStatus.getOutPingCount(clientID);
                 if (pingCount > 0) {
+                    //Reset the unreceived ping response counter
                     this.nodeStatus.setOutPingCount(clientID, 0);
                 }
             }
         }
         this.nodeStatus.setQuitComplete(true);
     }
-
+    
     private void notifyJoinedSuccessor(int clientID) {
         try {
             int joinedSuccessor = this.nodeStatus.getJoinedSuccessor();

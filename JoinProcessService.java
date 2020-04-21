@@ -3,6 +3,9 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
+/**
+ * JoinProcessService processes incoming join requests.
+ */
 class JoinProcessService implements Runnable {
 
     private Socket client;
@@ -28,10 +31,12 @@ class JoinProcessService implements Runnable {
             int firstSuccessorNodeID = this.successorNodeIDList.get(0);
             int secondSuccessorNodeID = this.successorNodeIDList.get(1);
 
-            //  REPONSE/JOIN:APPROVED:4:5
+            // Message for join request approval.
+            //  e.g. REPONSE/JOIN:APPROVED:4:5
             String r1 = "RESPONSE/JOIN:APPROVED:" + firstSuccessorNodeID
                                             + ":" + secondSuccessorNodeID;
-            //  REPONSE/JOIN:DELEGATE:4
+            //Message for join request delegation.
+            //  e.g. REPONSE/JOIN:DELEGATE:4
             String r2 = "RESPONSE/JOIN:DELEGATE:" + firstSuccessorNodeID;
 
             if (this.clientNodeID < this.nodeID) {
