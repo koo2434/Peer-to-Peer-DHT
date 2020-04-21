@@ -39,7 +39,6 @@ class TCPProcessService implements Runnable {
 
                 String request = in.readUTF();
                 String requestType = request.split(":")[0].trim();
-                System.out.println(request);
 
                 //1. Join Request
                 if (requestType.contains("REQUEST/JOIN")) {
@@ -95,7 +94,6 @@ class TCPProcessService implements Runnable {
                                         + this.successorNodeIDList.get(0) + ":"
                                         + this.successorNodeIDList.get(1);
                         out.writeUTF(response);
-                        System.out.println("Sent: " + response);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
