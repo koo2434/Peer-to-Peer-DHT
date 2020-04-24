@@ -34,7 +34,6 @@ class FileProcessor {
             File file = new File("./Files");
             String[] foundFiles = file.list();
             for (String f : foundFiles) {
-                System.out.println(f);
 
                 if (f.split("\\.")[0].equals(fileName+"")) {
                     return true;
@@ -105,7 +104,6 @@ class FileProcessor {
                         requestMsg = "REQUEST/DATA_INSERTION:"+fileName+":FALSE";
                     }
                 }
-                System.out.println("==== " + requestMsg);
                 Socket socket = new Socket(InetAddress.getByName("127.0.0.1"),
                                     this.PORT_OFFSET + successorID);
                 DataOutputStream out = new DataOutputStream(socket.getOutputStream());
